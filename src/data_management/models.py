@@ -341,7 +341,7 @@ class DataBase:
                     RunLabelsColumns.QBIT_NUM: pos,
                     RunLabelsColumns.QBIT_LABEL: label,
                 }
-                for pos, label in enumerate(reversed(labels))
+                for pos, label in enumerate(labels)
             ]
         )
 

@@ -62,10 +62,11 @@ def execute_run_and_store(
         run_id,
         environment.get_all_param_and_values(),
     )
-    db.load_run_labels(run_id, system.labels)
+    labels = system.labels[::-1]
+    db.load_run_labels(run_id, labels)
 
     measurements = []
-    while not protocol.is_done(measurements, system.labels):
+    while not protocol.is_done(measurements, labels):
         measurements.append(system.state.measure()[0])
 
     db.load_raw_measurements(run_id, measurements)

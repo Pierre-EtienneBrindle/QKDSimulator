@@ -73,7 +73,7 @@ class SingleQbitDepolarization(Environment):
         return curr_system
 
 
-class SingleQuitAmplitudeDamping(Environment):
+class SingleQbitAmplitudeDamping(Environment):
     """Class for an environment that applies an amplitude damping channel
     only to the transmitted qbits"""
 
@@ -164,7 +164,7 @@ class BB84KeyDistribution(DistributionProtocol):
         ]
 
         error_rate = sum(
-            alice_key[i] != bob_key[i] for i in self.random_seed
+            alice_key[i] != bob_key[i] for i in random_subset
         ) / len(random_subset)
 
         # If there's to much error, they abort
@@ -235,6 +235,7 @@ class BB84KeyDistribution(DistributionProtocol):
         return Kraus(qc)
 
     def is_done(self, measurements, labels):
+        # NOT SURE ABOUT THE CONSTANT
         return (
             len(measurements)
             >= 4 * (1 + 2 * self.max_error_rate) * self.target_key_size
@@ -311,7 +312,7 @@ class TomamichelEtAlKeyDistribution(DistributionProtocol):
         # This shouldn't be done in practice, but it's needed for the
         # analysis of the protocol
         random.seed(self.random_seed)
-        key_subset = random.sample(bloc, k=self.bloc_size)
+        key_subset = random.sample(bloc, k=int(self.bloc_size))
 
         alice_key = "".join(
             m[alice_bit_idx]
@@ -366,7 +367,7 @@ class TomamichelEtAlKeyDistribution(DistributionProtocol):
         """Compute the angle to get the right probability to choose the X
         basis"""
         px = 1 / (1 + np.sqrt(self.detection_size / self.bloc_size))
-        return np.asin(np.sqrt(px))
+        return 2 * np.asin(np.sqrt(px))
 
     def alice_state_preparation_channel(self) -> Kraus:
         """Alice prepares a random qbit in a BB84 state"""
@@ -387,6 +388,9 @@ class TomamichelEtAlKeyDistribution(DistributionProtocol):
         return Kraus(qc)
 
     def is_done(self, measurements, labels):
+        if measurements is None or len(measurements) == 0:
+            return False
+
         bob_basis_idx = labels.index(TomamichelEtAlQbitLabels.BOB_BASE_CHOICE)
         alice_basis_idx = labels.index(
             TomamichelEtAlQbitLabels.ALICE_BASE_CHOICE

@@ -7,7 +7,7 @@ from typing import Dict, Any
 from src.distribution.models import (
     NoiselessEnvironment,
     SingleQbitDepolarization,
-    SingleQuitAmplitudeDamping,
+    SingleQbitAmplitudeDamping,
     BB84KeyDistribution,
     TomamichelEtAlKeyDistribution,
 )
@@ -48,7 +48,7 @@ def create_single_qbit_depolarization(
 
 def create_single_qbit_amplitude_damping(
     params: Dict[str, Any],
-) -> SingleQuitAmplitudeDamping:
+) -> SingleQbitAmplitudeDamping:
     """Creates a single qbit amplitude damping channel from the dictionary of parameters
 
     :param params: The parameters of the amplitude damping channel
@@ -57,7 +57,7 @@ def create_single_qbit_amplitude_damping(
     parameters
     :rtype: SingleQbitAmplitudeDamping"""
 
-    return SingleQuitAmplitudeDamping(
+    return SingleQbitAmplitudeDamping(
         params[AmplitudeDampingParams.PROBABILITY]
     )
 
