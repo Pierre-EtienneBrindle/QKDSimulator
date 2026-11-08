@@ -57,9 +57,9 @@ class SingleQbitDepolarization(Environment):
         self, segment_number, curr_system, transmitted_qbits
     ):
 
-        e_x = np.sqrt(self.p) * Operator.from_label("X").data
-        e_y = np.sqrt(self.p) * Operator.from_label("Y").data
-        e_z = np.sqrt(self.p) * Operator.from_label("Z").data
+        e_x = np.sqrt(self.p / 4) * Operator.from_label("X").data
+        e_y = np.sqrt(self.p / 4) * Operator.from_label("Y").data
+        e_z = np.sqrt(self.p / 4) * Operator.from_label("Z").data
         e_i = np.sqrt(1 - 3 * self.p / 4) * Operator.from_label("I").data
 
         kraus = Kraus([e_x, e_y, e_z, e_i])
@@ -89,8 +89,8 @@ class SingleQbitAmplitudeDamping(Environment):
     def apply_environment_after_segment(
         self, segment_number, curr_system, transmitted_qbits
     ):
-        e_0 = np.array([[1, 0], [0, np.sqrt(1 - self.p)]])
-        e_1 = np.array([[0, np.sqrt(self.p)], [0, 0]])
+        e_0 = np.array([[1.0, 0], [0.0, np.sqrt(1 - self.p)]])
+        e_1 = np.array([[0.0, np.sqrt(self.p)], [0.0, 0.0]])
         kraus = Kraus([e_0, e_1])
 
         for qbit in transmitted_qbits:
@@ -157,7 +157,6 @@ class BB84KeyDistribution(DistributionProtocol):
         # analysis of the protocol
         rng = np.random.default_rng(int(self.random_seed))
         random_subset = rng.integers(low=0, high=2, size=len(alice_key))
-
         error_rate = sum(
             alice_key[i] != bob_key[i] for i in random_subset
         ) / len(random_subset)
