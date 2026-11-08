@@ -21,14 +21,14 @@ def compute_final_system(
 
     final_system = System()
     for segment in range(protocol.get_num_segments()):
-        final_system, transmitted_qubits = protocol.apply_protocol_segment(
+        final_system, transmitted_qbits = protocol.apply_protocol_segment(
             segment, final_system
         )
 
         final_system = environment.apply_environment_after_segment(
             segment,
             final_system,
-            transmitted_qubits,
+            transmitted_qbits,
         )
 
     return final_system
@@ -37,7 +37,7 @@ def compute_final_system(
 def execute_run_and_store(
     protocol: DistributionProtocol, environment: Environment, db: DataBase
 ) -> int:
-    """Measures the system and stores the result for each qubit
+    """Measures the system and stores the result for each qbit
 
     :param protocol: The protocol to simulate
     :type protocol: DistributionProtocol

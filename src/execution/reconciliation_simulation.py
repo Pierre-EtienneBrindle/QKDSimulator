@@ -55,8 +55,8 @@ def execute_reconciliation_and_store(
     labels: List[str] = list(
         db.run_labels[
             db.run_labels[RunLabelsColumns.RUN_ID] == run_id
-        ].sort_values(by=RunLabelsColumns.QUBIT_NUM)[
-            RunLabelsColumns.QUBIT_LABEL
+        ].sort_values(by=RunLabelsColumns.QBIT_NUM)[
+            RunLabelsColumns.QBIT_LABEL
         ]
     )
     measurements: List[str] = list(
@@ -68,14 +68,21 @@ def execute_reconciliation_and_store(
     )
 
     dist_protocol = constructor(parameters)
-    alice_raw, bob_raw = dist_protocol.compute_raw_keys(measurements, labels)
+    alice_raw, bob_raw, error_rate = dist_protocol.compute_raw_keys(
+        measurements, labels
+    )
 
     alice_key, bob_key = reconciliation_protocol.reconciliate_keys(
-        alice_raw, bob_raw
+        alice_raw,
+        bob_raw,
+        error_rate,
     )
 
     reconciliation_id = db.load_reconciliation(
-        reconciliation_protocol.get_name(), run_id, alice_key, bob_key
+        reconciliation_protocol.get_name(),
+        run_id,
+        alice_key,
+        bob_key,
     )
 
     db.load_reconciliation_parameters(

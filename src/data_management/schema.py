@@ -46,8 +46,8 @@ class RunLabelsColumns(StrEnum):
     """Enumeration of all the columns of the df 'run_label'"""
 
     RUN_ID = auto()
-    QUBIT_NUM = auto()
-    QUBIT_LABEL = auto()
+    QBIT_NUM = auto()
+    QBIT_LABEL = auto()
 
 
 class RawMeasurementColumns(StrEnum):

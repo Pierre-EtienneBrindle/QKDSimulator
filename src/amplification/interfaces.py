@@ -11,7 +11,7 @@ class AmplificationProtocol(ABC):
 
     @abstractmethod
     def get_name(self) -> str:
-        """Abstract function to implement\n\n
+        """
         Gives the name of the protocol
 
         :return: The name of the protocol
@@ -20,7 +20,7 @@ class AmplificationProtocol(ABC):
 
     @abstractmethod
     def get_all_params_names_and_values(self) -> List[Tuple[str, Any]]:
-        """Abstract function to implement\n\n
+        """
         Gets all the parameters and returns their names and values
 
         :return: All names and values of each parameters as a list of tuples
@@ -33,7 +33,7 @@ class AmplificationProtocol(ABC):
     def amplify_keys(
         self, alice_raw_key: str, bob_raw_key: str
     ) -> Tuple[str, str]:
-        """Abstract function to implement\n\n
+        """
         Tries to minimise the shared information of an eavesdropper and Alice's key
 
         :param alice_raw_key: Alice's raw key

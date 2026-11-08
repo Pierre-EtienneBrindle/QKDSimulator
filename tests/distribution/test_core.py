@@ -15,9 +15,9 @@ from src.distribution import System
         ["A", "B", "C"],
     ],
 )
-def test_adding_qubits_labels(labels: list[str]) -> None:
+def test_adding_qbits_labels(labels: list[str]) -> None:
     test_system = System()
-    test_system.add_qubits(labels)
+    test_system.add_qbits(labels)
 
     assert test_system.labels == labels
 
@@ -31,20 +31,20 @@ def test_adding_qubits_labels(labels: list[str]) -> None:
         (["1", "2"], ["3,4"]),
     ],
 )
-def test_adding_qubits_correct_size(
+def test_adding_qbits_correct_size(
     labels1: list[str],
     labels2: list[str],
 ) -> None:
     test_system = System()
-    test_system.add_qubits(labels1)
-    test_system.add_qubits(labels2)
+    test_system.add_qbits(labels1)
+    test_system.add_qbits(labels2)
 
-    assert test_system.state.num_qubits == len(labels1) + len(labels2)
+    assert test_system.state.num_qbits == len(labels1) + len(labels2)
 
 
 def test_evoliton() -> None:
     test_system = System()
-    test_system.add_qubits(["1", "2"])
+    test_system.add_qbits(["1", "2"])
 
     qc = QuantumCircuit(2)
 

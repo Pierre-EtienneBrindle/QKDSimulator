@@ -94,8 +94,8 @@ class DataBase:
         self.run_labels = pd.DataFrame(
             {
                 RunLabelsColumns.RUN_ID: pd.Series(dtype="uint32"),
-                RunLabelsColumns.QUBIT_NUM: pd.Series(dtype="uint8"),
-                RunLabelsColumns.QUBIT_LABEL: pd.Series(dtype="string"),
+                RunLabelsColumns.QBIT_NUM: pd.Series(dtype="uint8"),
+                RunLabelsColumns.QBIT_LABEL: pd.Series(dtype="string"),
             }
         )
 
@@ -331,15 +331,15 @@ class DataBase:
 
         :param run_id : The id of the run the labels are related to
         :type run_id: int
-        :param labels: The name of each qubits
+        :param labels: The name of each qbits
         :type labels: List[str]"""
 
         temp = pd.DataFrame(
             [
                 {
                     RunLabelsColumns.RUN_ID: run_id,
-                    RunLabelsColumns.QUBIT_NUM: pos,
-                    RunLabelsColumns.QUBIT_LABEL: label,
+                    RunLabelsColumns.QBIT_NUM: pos,
+                    RunLabelsColumns.QBIT_LABEL: label,
                 }
                 for pos, label in enumerate(reversed(labels))
             ]
@@ -348,7 +348,7 @@ class DataBase:
         self.run_labels = pd.concat([self.run_labels, temp]).drop_duplicates(
             subset=[
                 RunLabelsColumns.RUN_ID,
-                RunLabelsColumns.QUBIT_NUM,
+                RunLabelsColumns.QBIT_NUM,
             ],
             keep="first",
         )

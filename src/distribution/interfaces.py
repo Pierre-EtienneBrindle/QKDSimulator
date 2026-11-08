@@ -12,7 +12,7 @@ class Environment(ABC):
 
     @abstractmethod
     def get_name(self) -> str:
-        """Abstract function to implement\n\n
+        """
         Gives the name of the environment
 
         :return: The name of the environment
@@ -21,7 +21,7 @@ class Environment(ABC):
 
     @abstractmethod
     def get_all_param_and_values(self) -> List[Tuple[str, Any]]:
-        """Abstract function to implement\n\n
+        """
         Gets all the parameters and returns their names and values
 
         :return: All names and values of each parameters as a list of tuples
@@ -34,7 +34,7 @@ class Environment(ABC):
         measurements: List[str],
         labels: List[str],
     ) -> List[str]:
-        """Abstract function to implement\n\n
+        """
         For environment that represents an eavesdropper's behavior, computes
         the bits measured by Eve on each attempt. Might be used to compute
         the amount of shared entropy between Eve and Alice's raw key. If the
@@ -50,22 +50,22 @@ class Environment(ABC):
         self,
         segment_number: int,
         curr_system: System,
-        transmitted_qubits: List[str],
+        transmitted_qbits: List[str],
     ) -> System:
-        """Abstract function to implement\n\n
+        """
         Applies the environment to the system. This operation should only
-        affect qubits created for this specific environment and the qubits
+        affect qbits created for this specific environment and the qbits
         transmitted in the quantum communication channel. In the case of an
-        eave's dropper, it can also read any classical communication qubit
+        eave's dropper, it can also read any classical communication qbit
 
         :param segment_number: The segment of the protocol after witch the
         environment is placed (used for Eve's)
         :type segment_number: int
         :param curr_system: The system to apply the environment to
         :type curr_system: System
-        :param transmitted_qubits: The labels of the qubits that are
+        :param transmitted_qbits: The labels of the qbits that are
         transmitted over the quantum communication channel
-        :type transmitted_qubits: List[str]
+        :type transmitted_qbits: List[str]
         :return: The system after the environment was applied. This system
         might have greater dimensions than the original one.
         :rtype: System"""
@@ -77,7 +77,7 @@ class DistributionProtocol(ABC):
 
     @abstractmethod
     def get_name(self) -> str:
-        """Abstract function to implement\n\n
+        """
         Gives the name of the protocol
 
         :return: The name of the protocol
@@ -86,32 +86,31 @@ class DistributionProtocol(ABC):
 
     @abstractmethod
     def get_all_params_names_and_values(self) -> List[Tuple[str, Any]]:
-        """Abstract function to implement\n\n
+        """
         Gets all the parameters and returns their names and values
 
         :return: All names and values of each parameters as a list of tuples
         :rtype: List[Tuple[str,Any]]"""
         raise NotImplementedError("This abstract method wasn't implemented")
 
-    # TO THINK ABOUT : OUTPUT ERROR RATE ?
     @abstractmethod
     def compute_raw_keys(
         self,
         measurements: List[str],
         labels: List[str],
-    ) -> Tuple[str, str]:
-        """Abstract function to implement\n\n
+    ) -> Tuple[str, str, float]:
+        """
         Computes the raw key that Alice and Bob would have had after doing
         each measurement.
 
         :param measurements: The list of all the results of the measurements
         of the system
         :type measurements: List[str]
-        :param labels: The name of each qubit to be able to identify Alice's
-        and Bob's qubits
+        :param labels: The name of each qbit to be able to identify Alice's
+        and Bob's qbits
         :type labels: List[str]
-        :return: The raw keys of Alice and Bob in this order
-        :rtype: Tuple[str,str]
+        :return: Alice's raw key, Bob's raw key and the error rate in this order
+        :rtype: Tuple[str,str,float]
         """
         raise NotImplementedError("This abstract method wasn't implemented")
 
@@ -120,10 +119,10 @@ class DistributionProtocol(ABC):
         self,
         segment_number: int,
         curr_system: System,
-    ) -> Tuple[System, List[str], List[str]]:
-        """Abstract function to implement\n\n
+    ) -> Tuple[System, List[str]]:
+        """
         Applies a segment of the protocol to the system. A segment always end
-        when Alice and/or Bob sends qubit over the quantum channel and/or
+        when Alice and/or Bob sends qbit over the quantum channel and/or
         communicate with one another.
 
         :param segment_number: Part of the protocol to do. Starts with 0
@@ -131,7 +130,7 @@ class DistributionProtocol(ABC):
         :param curr_system: The system before the application of the protocol
         :type curr_system: System
         :return: The new system after doing the segment of the protocol and
-        the labels of the qubits that will be transmitted over the quantum
+        the labels of the qbits that will be transmitted over the quantum
         channel at the end of the segment
         :rtype: Tuple[System, List[str]]
         """
@@ -139,7 +138,7 @@ class DistributionProtocol(ABC):
 
     @abstractmethod
     def get_num_segments(self) -> int:
-        """Abstract function to implement\n\n
+        """
         Gives the number of segments of the protocol
 
         :return: The number of segments of the protocol
@@ -150,7 +149,7 @@ class DistributionProtocol(ABC):
     # REDOING WORK ?
     @abstractmethod
     def is_done(self, measurements: List[str], labels: List[str]) -> bool:
-        """Abstract function to implement\n\n
+        """
         Checks whether the protocol was completed or not (ie. where enough
         iterations done)
 

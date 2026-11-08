@@ -19,7 +19,7 @@ classDiagram
             class System{
                 +DensityMatrix state
                 +List~String~ labels
-                +add_qubits(List~String~ labels) None
+                +add_qbits(List~String~ labels) None
                 +evolve(Kraus channel, List~String~ quargs) None
             }
         }
@@ -41,7 +41,7 @@ classDiagram
                 +get_name()* String
                 +get_all_param_and_values()* List~[String, Any]~
                 +compute_eve_bits_from_measurements(List~String~ measurements, List~String~ labels)* String
-                +apply_environment_after_segment(System system, int segment, List~String~ transmitted_qubits)* System
+                +apply_environment_after_segment(System system, int segment, List~String~ transmitted_qbits)* System
             }
         }
     }
@@ -138,8 +138,8 @@ classDiagram
             class RunLabelsColumns{
                 <<enumeration>>
                 +RUN_ID$
-                +QUBIT_NUM$
-                +QUBIT_LABEL$
+                +QBIT_NUM$
+                +QBIT_LABEL$
             }
 
             class RawMeasurementColumns{
@@ -271,8 +271,8 @@ erDiagram
 
     run_labels{
         int run_id PK,FK
-        int qubit_num PK
-        String qubit_label
+        int qbit_num PK
+        String qbit_label
     }
 
     raw_measurements{

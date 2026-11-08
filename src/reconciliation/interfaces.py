@@ -11,7 +11,7 @@ class ReconciliationProtocol(ABC):
 
     @abstractmethod
     def get_name(self) -> str:
-        """Abstract function to implement\n\n
+        """
         Gives the name of the protocol
 
         :return: The name of the protocol
@@ -20,7 +20,7 @@ class ReconciliationProtocol(ABC):
 
     @abstractmethod
     def get_all_params_names_and_values(self) -> List[Tuple[str, Any]]:
-        """Abstract function to implement\n\n
+        """
         Gets all the parameters and returns their names and values
 
         :return: All names and values of each parameters as a list of tuples
@@ -29,19 +29,22 @@ class ReconciliationProtocol(ABC):
 
     # TO THINK ABOUT : OUTPUT AMOUNT OF BIT REVEALED / AMOUNT OF ENTROPY
     # REVEALED ?
-    # TO THINK ABOUT : GET ERROR RATE ? -- Cold be passed though as a param
-    # when constructing object
     @abstractmethod
     def reconciliate_keys(
-        self, alice_raw_key: str, bob_raw_key: str
+        self,
+        alice_raw_key: str,
+        bob_raw_key: str,
+        error_rate: float,
     ) -> Tuple[str, str]:
-        """Abstract function to implement\n\n
+        """
         Tries and remove errors between Alice's and Bob's raw key
 
         :param alice_raw_key: Alice's raw key
         :type alice_raw_key: str
         :param bob_raw_key: Bob's raw key
         :type bob_raw_key: str
+        :param error_rate: The expected error rate of the protocol
+        :type error_rate: float
         :return: Alice's and Bob's key after error reconciliation
         :rtype: Tuple[str,str]
         """

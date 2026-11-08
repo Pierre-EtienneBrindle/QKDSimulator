@@ -12,18 +12,18 @@ class System:
     Attributes :\n
     state (DensityMatrix) : The actual state represented as a density
                             matrix\n
-    labels (List[str]) : The name of each qubit for identifying purposes
+    labels (List[str]) : The name of each qbit for identifying purposes
     """
 
-    # DensityMatrix([1]) is equivalent to a zero qubit system
+    # DensityMatrix([1]) is equivalent to a zero qbit system
     state: DensityMatrix = DensityMatrix([1])
 
     labels: List[str] = []
 
-    def add_qubits(self, new_labels: List[str]) -> None:
-        """Adds qubits in the |0><0| state to the system
+    def add_qbits(self, new_labels: List[str]) -> None:
+        """Adds qbits in the |0><0| state to the system
 
-        :param new_labels: The name of the new qubits
+        :param new_labels: The name of the new qbits
         :type new_labels: List[str]
         """
 
@@ -40,7 +40,7 @@ class System:
 
         :param channel: The channel to apply on the system
         :type channel: Kraus
-        :param quargs: The name of the qubits to apply the channel to.
+        :param quargs: The name of the qbits to apply the channel to.
         :type quargs: List[str]
         """
         quargs_in_index = [self.labels.index(label) for label in quargs]
