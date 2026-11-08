@@ -1,8 +1,5 @@
 """Instances of the different interfaces"""
 
-# Using random even tho it's not cryptographically secured
-import random
-
 import numpy as np
 from qiskit import QuantumCircuit
 from qiskit.quantum_info import Kraus, Operator
@@ -158,10 +155,8 @@ class BB84KeyDistribution(DistributionProtocol):
         # Sets the random seed each time to make results determinist.
         # This shouldn't be done in practice, but it's needed for the
         # analysis of the protocol
-        random.seed(self.random_seed)
-        random_subset = [
-            i for i in range(len(alice_key)) if random.randint(0, 1) == 0
-        ]
+        rng = np.random.default_rng(self.random_seed)
+        random_subset = rng.integers(low=0, high=2, size=len(alice_key))
 
         error_rate = sum(
             alice_key[i] != bob_key[i] for i in random_subset
@@ -311,8 +306,8 @@ class TomamichelEtAlKeyDistribution(DistributionProtocol):
         # Sets the random seed each time to make results determinist.
         # This shouldn't be done in practice, but it's needed for the
         # analysis of the protocol
-        random.seed(self.random_seed)
-        key_subset = random.sample(bloc, k=int(self.bloc_size))
+        rng = np.random.default_rng(self.random_seed)
+        key_subset = rng.choice(bloc, size=int(self.bloc_size), replace=False)
 
         alice_key = "".join(
             m[alice_bit_idx]
