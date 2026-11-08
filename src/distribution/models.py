@@ -112,7 +112,7 @@ class BB84KeyDistribution(DistributionProtocol):
     def __init__(
         self,
         max_error_rate: float,
-        target_key_size: float,
+        target_key_size: int,
         random_seed: int,
     ):
         super().__init__()
@@ -155,7 +155,7 @@ class BB84KeyDistribution(DistributionProtocol):
         # Sets the random seed each time to make results determinist.
         # This shouldn't be done in practice, but it's needed for the
         # analysis of the protocol
-        rng = np.random.default_rng(self.random_seed)
+        rng = np.random.default_rng(int(self.random_seed))
         random_subset = rng.integers(low=0, high=2, size=len(alice_key))
 
         error_rate = sum(
@@ -306,7 +306,7 @@ class TomamichelEtAlKeyDistribution(DistributionProtocol):
         # Sets the random seed each time to make results determinist.
         # This shouldn't be done in practice, but it's needed for the
         # analysis of the protocol
-        rng = np.random.default_rng(self.random_seed)
+        rng = np.random.default_rng(int(self.random_seed))
         key_subset = rng.choice(bloc, size=int(self.bloc_size), replace=False)
 
         alice_key = "".join(
