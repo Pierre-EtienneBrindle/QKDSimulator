@@ -198,7 +198,9 @@ class BB84KeyDistribution(DistributionProtocol):
         rng = np.random.default_rng(int(self.random_seed))
         random_subset = rng.integers(low=0, high=2, size=len(alice_key))
         error_rate = sum(
-            alice_key[i] != bob_key[i] for i in random_subset
+            alice_key[i] != bob_key[i]
+            for i, keep in enumerate(random_subset)
+            if keep == 1
         ) / len(random_subset)
 
         # If there's to much error, they abort
