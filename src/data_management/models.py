@@ -4,19 +4,17 @@ from typing import List, Any, Tuple
 import pandas as pd
 
 from src.data_management.schema import (
-    DistributionProtocolColumns,
-    RunColumns,
-    DistributionParametersColumns,
-    EnvironmentColumns,
-    EnvironmentParametersColumns,
-    RunLabelsColumns,
-    RawMeasurementColumns,
-    ReconciliationParametersColumns,
-    ReconciliationColumns,
-    ReconciliationProtocolColumns,
-    AmplificationProtocolColumns,
-    AmplificationColumns,
-    AmplificationParametersColumns,
+    DistProtCols,
+    RunCols,
+    DistParamsCols,
+    EnvCols,
+    EnvParamsCols,
+    RecParamsCols,
+    RecCols,
+    RecProtCols,
+    AmpProtCols,
+    AmpCols,
+    AmpParamsCols,
 )
 from src.distribution import DistributionProtocol, Environment
 from src.reconciliation import ReconciliationProtocol
@@ -29,155 +27,123 @@ class DataBase:
 
     distribution_protocol: pd.DataFrame
     run: pd.DataFrame
-    distribution_parameters: pd.DataFrame
+    distribution_params: pd.DataFrame
     environment: pd.DataFrame
-    environment_parameters: pd.DataFrame
-    run_labels: pd.DataFrame
-    raw_measurement: pd.DataFrame
+    environment_params: pd.DataFrame
 
     reconciliation_protocol: pd.DataFrame
     reconciliation: pd.DataFrame
-    reconciliation_parameters: pd.DataFrame
+    reconciliation_params: pd.DataFrame
 
     amplification_protocol: pd.DataFrame
     amplification: pd.DataFrame
-    amplification_parameters: pd.DataFrame
+    amplification_params: pd.DataFrame
 
     def __init__(self):
 
         self.distribution_protocol = pd.DataFrame(
             {
-                DistributionProtocolColumns.NAME: pd.Series(dtype="string"),
-                DistributionProtocolColumns.CONSTRUCTOR: pd.Series(
-                    dtype="object"
-                ),
+                DistProtCols.NAME: pd.Series(dtype="string"),
+                DistProtCols.CONSTRUCTOR: pd.Series(dtype="object"),
             }
         )
 
         self.run = pd.DataFrame(
             {
-                RunColumns.ID: pd.Series(dtype="uint32"),
-                RunColumns.PROTOCOL_NAME: pd.Series(dtype="string"),
-                RunColumns.ENVIRONMENT_NAME: pd.Series(dtype="string"),
+                RunCols.ID: pd.Series(dtype="uint32"),
+                RunCols.PROTOCOL_NAME: pd.Series(dtype="string"),
+                RunCols.ENVIRONMENT_NAME: pd.Series(dtype="string"),
+                RunCols.ALICE_KEY: pd.Series(dtype="string"),
+                RunCols.BOB_KEY: pd.Series(dtype="string"),
+                RunCols.EVE_INFO: pd.Series(dtype="string"),
+                RunCols.ERROR_RATE: pd.Series(dtype="float64"),
+                RunCols.NUM_ITERATIONS: pd.Series(dtype="uint32"),
             }
         )
 
-        self.distribution_parameters = pd.DataFrame(
+        self.distribution_params = pd.DataFrame(
             {
-                DistributionParametersColumns.RUN_ID: pd.Series(
-                    dtype="uint32"
-                ),
-                DistributionParametersColumns.NAME: pd.Series(dtype="string"),
-                DistributionParametersColumns.VALUE: pd.Series(
-                    dtype="object"
-                ),
+                DistParamsCols.RUN_ID: pd.Series(dtype="uint32"),
+                DistParamsCols.NAME: pd.Series(dtype="string"),
+                DistParamsCols.VALUE: pd.Series(dtype="object"),
             }
         )
 
         self.environment = pd.DataFrame(
             {
-                EnvironmentColumns.NAME: pd.Series(dtype="string"),
-                EnvironmentColumns.CONSTRUCTOR: pd.Series(dtype="object"),
+                EnvCols.NAME: pd.Series(dtype="string"),
+                EnvCols.CONSTRUCTOR: pd.Series(dtype="object"),
             }
         )
 
-        self.environment_parameters = pd.DataFrame(
+        self.environment_params = pd.DataFrame(
             {
-                EnvironmentParametersColumns.RUN_ID: pd.Series(
-                    dtype="uint32"
-                ),
-                EnvironmentParametersColumns.NAME: pd.Series(dtype="string"),
-                EnvironmentParametersColumns.VALUE: pd.Series(dtype="object"),
-            }
-        )
-
-        self.run_labels = pd.DataFrame(
-            {
-                RunLabelsColumns.RUN_ID: pd.Series(dtype="uint32"),
-                RunLabelsColumns.QBIT_NUM: pd.Series(dtype="uint8"),
-                RunLabelsColumns.QBIT_LABEL: pd.Series(dtype="string"),
-            }
-        )
-
-        self.raw_measurement = pd.DataFrame(
-            {
-                RawMeasurementColumns.RUN_ID: pd.Series(dtype="uint32"),
-                RawMeasurementColumns.ITERATION: pd.Series(dtype="uint32"),
-                RawMeasurementColumns.MEASUREMENT: pd.Series(dtype="string"),
+                EnvParamsCols.RUN_ID: pd.Series(dtype="uint32"),
+                EnvParamsCols.NAME: pd.Series(dtype="string"),
+                EnvParamsCols.VALUE: pd.Series(dtype="object"),
             }
         )
 
         self.reconciliation_protocol = pd.DataFrame(
             {
-                ReconciliationProtocolColumns.NAME: pd.Series(dtype="string"),
-                ReconciliationProtocolColumns.CONSTRUCTOR: pd.Series(
-                    dtype="object"
-                ),
+                RecProtCols.NAME: pd.Series(dtype="string"),
+                RecProtCols.CONSTRUCTOR: pd.Series(dtype="object"),
             }
         )
 
         self.reconciliation = pd.DataFrame(
             {
-                ReconciliationColumns.ID: pd.Series(dtype="uint32"),
-                ReconciliationColumns.PROTOCOL_NAME: pd.Series(
-                    dtype="string"
-                ),
-                ReconciliationColumns.RUN_ID: pd.Series(dtype="uint32"),
-                ReconciliationColumns.ALICE_KEY: pd.Series(dtype="string"),
-                ReconciliationColumns.BOB_KEY: pd.Series(dtype="string"),
+                RecCols.ID: pd.Series(dtype="uint32"),
+                RecCols.PROTOCOL_NAME: pd.Series(dtype="string"),
+                RecCols.RUN_ID: pd.Series(dtype="uint32"),
+                RecCols.ALICE_KEY: pd.Series(dtype="string"),
+                RecCols.BOB_KEY: pd.Series(dtype="string"),
             }
         )
 
-        self.reconciliation_parameters = pd.DataFrame(
+        self.reconciliation_params = pd.DataFrame(
             {
-                ReconciliationParametersColumns.RECONCILIATION_ID: pd.Series(
-                    dtype="uint32"
-                ),
-                ReconciliationParametersColumns.NAME: pd.Series(
-                    dtype="string"
-                ),
-                ReconciliationParametersColumns.VALUE: pd.Series(
-                    dtype="object"
-                ),
+                RecParamsCols.RECONCILIATION_ID: pd.Series(dtype="uint32"),
+                RecParamsCols.NAME: pd.Series(dtype="string"),
+                RecParamsCols.VALUE: pd.Series(dtype="object"),
             }
         )
 
         self.amplification_protocol = pd.DataFrame(
             {
-                AmplificationProtocolColumns.NAME: pd.Series(dtype="string"),
-                AmplificationProtocolColumns.CONSTRUCTOR: pd.Series(
-                    dtype="object"
-                ),
+                AmpProtCols.NAME: pd.Series(dtype="string"),
+                AmpProtCols.CONSTRUCTOR: pd.Series(dtype="object"),
             }
         )
 
         self.amplification = pd.DataFrame(
             {
-                AmplificationColumns.ID: pd.Series(dtype="uint32"),
-                AmplificationColumns.PROTOCOL_NAME: pd.Series(dtype="string"),
-                AmplificationColumns.RECONCILIATION_ID: pd.Series(
-                    dtype="uint32"
-                ),
-                AmplificationColumns.ALICE_KEY: pd.Series(dtype="string"),
-                AmplificationColumns.BOB_KEY: pd.Series(dtype="string"),
+                AmpCols.ID: pd.Series(dtype="uint32"),
+                AmpCols.PROTOCOL_NAME: pd.Series(dtype="string"),
+                AmpCols.RECONCILIATION_ID: pd.Series(dtype="uint32"),
+                AmpCols.ALICE_KEY: pd.Series(dtype="string"),
+                AmpCols.BOB_KEY: pd.Series(dtype="string"),
             }
         )
 
-        self.amplification_parameters = pd.DataFrame(
+        self.amplification_params = pd.DataFrame(
             {
-                AmplificationParametersColumns.AMPLIFICATION_ID: pd.Series(
-                    dtype="uint32"
-                ),
-                AmplificationParametersColumns.NAME: pd.Series(
-                    dtype="string"
-                ),
-                AmplificationParametersColumns.VALUE: pd.Series(
-                    dtype="object"
-                ),
+                AmpParamsCols.AMPLIFICATION_ID: pd.Series(dtype="uint32"),
+                AmpParamsCols.NAME: pd.Series(dtype="string"),
+                AmpParamsCols.VALUE: pd.Series(dtype="object"),
             }
         )
 
-    def load_run(self, protocol_name: str, environment_name: str) -> int:
+    def load_run(
+        self,
+        protocol_name: str,
+        environment_name: str,
+        alice_key: str,
+        bob_key: str,
+        eve_info: str,
+        error_rate: float,
+        num_iterations: int,
+    ) -> int:
         """Adds the run to the 'run' dataframe.
 
         :param protocol_name: The name of the protocol simulated
@@ -185,19 +151,34 @@ class DataBase:
         :param environment_name: The name of the environment that added noise
         to the system
         :type environment_name: str
+        :param alice_key: Alice's raw key obtained in the run
+        :type alice_key: str
+        :param bob_key: Bob's raw key obtained in the run
+        :type bob_key: str
+        :param eve_info: Informations on the key obtained by Eve
+        :type eve_info: str
+        :param error_rate : The detected error rate
+        :type error_rate: float
+        :param num_iterations: The number of iterations done to get the key
+        :type num_iterations: int
         :return: The id of the run
         :rtype: int"""
 
         run_id = 0
         if len(self.run) > 0:
-            run_id = self.run[RunColumns.ID].max() + 1
+            run_id = self.run[RunCols.ID].max() + 1
 
         temp = pd.DataFrame(
             [
                 {
-                    RunColumns.ID: run_id,
-                    RunColumns.PROTOCOL_NAME: protocol_name,
-                    RunColumns.ENVIRONMENT_NAME: environment_name,
+                    RunCols.ID: run_id,
+                    RunCols.PROTOCOL_NAME: protocol_name,
+                    RunCols.ENVIRONMENT_NAME: environment_name,
+                    RunCols.ALICE_KEY: alice_key,
+                    RunCols.BOB_KEY: bob_key,
+                    RunCols.EVE_INFO: eve_info,
+                    RunCols.ERROR_RATE: error_rate,
+                    RunCols.NUM_ITERATIONS: num_iterations,
                 }
             ]
         )
@@ -213,31 +194,30 @@ class DataBase:
         'distribution_protocol' DataFrame
 
         :param distribution_protocols: The protocols to add to the DataFrame
-        :type distribution_protocols:
-        List[Tuple[str, Callable[[Dict[str, Any]], DistributionProtocol]]]
+        :type distribution_protocols: List[type[DistributionProtocol]]
         """
 
         temp = pd.DataFrame(
             [
                 {
-                    DistributionProtocolColumns.NAME: protocol.get_name(),
-                    DistributionProtocolColumns.CONSTRUCTOR: protocol.get_instance_from_params_dict,
+                    DistProtCols.NAME: prot.get_name(),
+                    DistProtCols.CONSTRUCTOR: prot.get_instance_from_params,
                 }
-                for protocol in distribution_protocols
+                for prot in distribution_protocols
             ]
         )
 
         self.distribution_protocol = pd.concat(
             [self.distribution_protocol, temp]
         ).drop_duplicates(
-            subset=[DistributionProtocolColumns.NAME],
+            subset=[DistProtCols.NAME],
             keep="last",
         )
 
-    def load_distribution_parameters(
+    def load_distribution_params(
         self, run_id: int, params: List[Tuple[str, Any]]
     ) -> None:
-        """Adds the run parameters to the 'distribution_parameters' dataframe.
+        """Adds the run parameters to the 'distribution_params' dataframe.
 
         :param run_id: The id of the run
         :type run_id: int
@@ -247,20 +227,20 @@ class DataBase:
         temp = pd.DataFrame(
             [
                 {
-                    DistributionParametersColumns.RUN_ID: run_id,
-                    DistributionParametersColumns.NAME: param[0],
-                    DistributionParametersColumns.VALUE: param[1],
+                    DistParamsCols.RUN_ID: run_id,
+                    DistParamsCols.NAME: param[0],
+                    DistParamsCols.VALUE: param[1],
                 }
                 for param in params
             ]
         )
 
-        self.distribution_parameters = pd.concat(
-            [self.distribution_parameters, temp]
+        self.distribution_params = pd.concat(
+            [self.distribution_params, temp]
         ).drop_duplicates(
             subset=[
-                DistributionParametersColumns.RUN_ID,
-                DistributionParametersColumns.NAME,
+                DistParamsCols.RUN_ID,
+                DistParamsCols.NAME,
             ],
             keep="first",
         )
@@ -273,14 +253,13 @@ class DataBase:
 
         :param distribution_protocols: The environments to add to the
         DataFrame
-        :type distribution_protocols:
-        List[Tuple[str, Callable[[Dict[str, Any]], Environment]]]
+        :type distribution_protocols: List[type[Environment]]
         """
         temp = pd.DataFrame(
             [
                 {
-                    EnvironmentColumns.NAME: env.get_name(),
-                    EnvironmentColumns.CONSTRUCTOR: env.get_instance_from_params_dict,
+                    EnvCols.NAME: env.get_name(),
+                    EnvCols.CONSTRUCTOR: env.get_instance_from_params,
                 }
                 for env in environments
             ]
@@ -288,13 +267,13 @@ class DataBase:
 
         self.environment = pd.concat(
             [self.environment, temp]
-        ).drop_duplicates(subset=[EnvironmentColumns.NAME], keep="last")
+        ).drop_duplicates(subset=[EnvCols.NAME], keep="last")
 
-    def load_environment_parameters(
+    def load_environment_params(
         self, run_id: int, params: List[Tuple[str, Any]]
     ) -> None:
         """Adds the environment parameters to the
-        'environment_parameters' dataframe.
+        'environment_params' dataframe.
 
         :param environment_id: The id of the run
         :type environment_id: int
@@ -304,79 +283,20 @@ class DataBase:
         temp = pd.DataFrame(
             [
                 {
-                    EnvironmentParametersColumns.RUN_ID: run_id,
-                    EnvironmentParametersColumns.NAME: param[0],
-                    EnvironmentParametersColumns.VALUE: param[1],
+                    EnvParamsCols.RUN_ID: run_id,
+                    EnvParamsCols.NAME: param[0],
+                    EnvParamsCols.VALUE: param[1],
                 }
                 for param in params
             ]
         )
 
-        self.environment_parameters = pd.concat(
-            [self.environment_parameters, temp]
+        self.environment_params = pd.concat(
+            [self.environment_params, temp]
         ).drop_duplicates(
             subset=[
-                EnvironmentParametersColumns.RUN_ID,
-                EnvironmentParametersColumns.NAME,
-            ],
-            keep="first",
-        )
-
-    def load_run_labels(self, run_id: int, labels: List[str]) -> None:
-        """Adds the run labels in the 'run_labels' DataFrame. To conserve
-        endianness, the labels are stored in the reverse order.
-
-        :param run_id : The id of the run the labels are related to
-        :type run_id: int
-        :param labels: The name of each qbits
-        :type labels: List[str]"""
-
-        temp = pd.DataFrame(
-            [
-                {
-                    RunLabelsColumns.RUN_ID: run_id,
-                    RunLabelsColumns.QBIT_NUM: pos,
-                    RunLabelsColumns.QBIT_LABEL: label,
-                }
-                for pos, label in enumerate(labels)
-            ]
-        )
-
-        self.run_labels = pd.concat([self.run_labels, temp]).drop_duplicates(
-            subset=[
-                RunLabelsColumns.RUN_ID,
-                RunLabelsColumns.QBIT_NUM,
-            ],
-            keep="first",
-        )
-
-    def load_raw_measurements(
-        self, run_id: int, measurements: List[str]
-    ) -> None:
-        """Adds the measurement into the 'raw_measurement' DataFrame.
-
-        :param run_id: The id of the run the measurements come from
-        :type run_id: int
-        :param measurements: The measurements collected
-        :type measurements: List[str]"""
-
-        temp = pd.DataFrame(
-            [
-                {
-                    RawMeasurementColumns.RUN_ID: run_id,
-                    RawMeasurementColumns.ITERATION: pos,
-                    RawMeasurementColumns.MEASUREMENT: meas,
-                }
-                for pos, meas in enumerate(measurements)
-            ]
-        )
-
-        self.raw_measurement = pd.concat(
-            [self.raw_measurement, temp]
-        ).drop_duplicates(
-            subset=[
-                RawMeasurementColumns.RUN_ID,
-                RawMeasurementColumns.ITERATION,
+                EnvParamsCols.RUN_ID,
+                EnvParamsCols.NAME,
             ],
             keep="first",
         )
@@ -388,24 +308,23 @@ class DataBase:
         """Loads the reconciliation protocols inside the 'reconciliation_protocol' DataFrame
 
         :param reconciliation_protocols: The protocols to add to the DataFrame
-        :type reconciliation_protocols:
-        List[Tuple[str, Callable[[Dict[str, Any]], ReconciliationProtocol]]]
+        :type reconciliation_protocols:  List[type[ReconciliationProtocol]]
         """
 
         temp = pd.DataFrame(
             [
                 {
-                    ReconciliationProtocolColumns.NAME: protocol.get_name(),
-                    ReconciliationProtocolColumns.CONSTRUCTOR: protocol.get_instance_from_params_dict,
+                    RecProtCols.NAME: prot.get_name(),
+                    RecProtCols.CONSTRUCTOR: prot.get_instance_from_params,
                 }
-                for protocol in reconciliation_protocols
+                for prot in reconciliation_protocols
             ]
         )
 
         self.reconciliation_protocol = pd.concat(
             [self.reconciliation_protocol, temp]
         ).drop_duplicates(
-            subset=[ReconciliationProtocolColumns.NAME],
+            subset=[RecProtCols.NAME],
             keep="last",
         )
 
@@ -428,18 +347,16 @@ class DataBase:
         reconciliation_id = 0
 
         if len(self.reconciliation) > 0:
-            reconciliation_id = (
-                self.reconciliation[ReconciliationColumns.ID].max() + 1
-            )
+            reconciliation_id = self.reconciliation[RecCols.ID].max() + 1
 
         temp = pd.DataFrame(
             [
                 {
-                    ReconciliationColumns.ID: reconciliation_id,
-                    ReconciliationColumns.PROTOCOL_NAME: protocol_name,
-                    ReconciliationColumns.RUN_ID: run_id,
-                    ReconciliationColumns.ALICE_KEY: alice_key,
-                    ReconciliationColumns.BOB_KEY: bob_key,
+                    RecCols.ID: reconciliation_id,
+                    RecCols.PROTOCOL_NAME: protocol_name,
+                    RecCols.RUN_ID: run_id,
+                    RecCols.ALICE_KEY: alice_key,
+                    RecCols.BOB_KEY: bob_key,
                 }
             ]
         )
@@ -448,11 +365,11 @@ class DataBase:
 
         return reconciliation_id
 
-    def load_reconciliation_parameters(
+    def load_reconciliation_params(
         self, reconciliation_id: int, params: List[Tuple[str, Any]]
     ) -> None:
         """Adds the information reconciliation's protocol parameters inside
-        the 'reconciliation_parameters' df.
+        the 'reconciliation_params' df.
 
         :param reconciliation_id: The id of the reconciliation attempt
         :type reconciliation_id: int
@@ -462,20 +379,20 @@ class DataBase:
         temp = pd.DataFrame(
             [
                 {
-                    ReconciliationParametersColumns.NAME: param[0],
-                    ReconciliationParametersColumns.VALUE: param[1],
-                    ReconciliationParametersColumns.RECONCILIATION_ID: reconciliation_id,
+                    RecParamsCols.NAME: param[0],
+                    RecParamsCols.VALUE: param[1],
+                    RecParamsCols.RECONCILIATION_ID: reconciliation_id,
                 }
                 for param in params
             ]
         )
 
-        self.reconciliation_parameters = pd.concat(
-            [self.reconciliation_parameters, temp]
+        self.reconciliation_params = pd.concat(
+            [self.reconciliation_params, temp]
         ).drop_duplicates(
             subset=[
-                ReconciliationParametersColumns.NAME,
-                ReconciliationParametersColumns.RECONCILIATION_ID,
+                RecParamsCols.NAME,
+                RecParamsCols.RECONCILIATION_ID,
             ],
             keep="first",
         )
@@ -487,24 +404,23 @@ class DataBase:
         """Loads the amplification protocols inside the 'amplification_protocol' DataFrame
 
         :param amplification_protocols: The protocols to add to the DataFrame
-        :type amplification_protocols:
-        List[Tuple[str, Callable[[Dict[str, Any]], AmplificationProtocol]]]
+        :type amplification_protocols: List[type[AmplificationProtocol]]
         """
 
         temp = pd.DataFrame(
             [
                 {
-                    AmplificationProtocolColumns.NAME: protocol.get_name(),
-                    AmplificationProtocolColumns.CONSTRUCTOR: protocol.get_instance_from_params_dict,
+                    AmpProtCols.NAME: prot.get_name(),
+                    AmpProtCols.CONSTRUCTOR: prot.get_instance_from_params,
                 }
-                for protocol in amplification_protocols
+                for prot in amplification_protocols
             ]
         )
 
         self.amplification_protocol = pd.concat(
             [self.amplification_protocol, temp]
         ).drop_duplicates(
-            subset=[AmplificationProtocolColumns.NAME],
+            subset=[AmpProtCols.NAME],
             keep="last",
         )
 
@@ -532,17 +448,15 @@ class DataBase:
         amplification_id = 0
 
         if len(self.amplification) > 0:
-            amplification_id = (
-                self.amplification[AmplificationColumns.ID].max() + 1
-            )
+            amplification_id = self.amplification[AmpCols.ID].max() + 1
 
         temp = pd.DataFrame(
             {
-                AmplificationColumns.ID: amplification_id,
-                AmplificationColumns.PROTOCOL_NAME: protocol_name,
-                AmplificationColumns.RECONCILIATION_ID: reconciliation_id,
-                AmplificationColumns.ALICE_KEY: alice_key,
-                AmplificationColumns.BOB_KEY: bob_key,
+                AmpCols.ID: amplification_id,
+                AmpCols.PROTOCOL_NAME: protocol_name,
+                AmpCols.RECONCILIATION_ID: reconciliation_id,
+                AmpCols.ALICE_KEY: alice_key,
+                AmpCols.BOB_KEY: bob_key,
             }
         )
 
@@ -550,7 +464,7 @@ class DataBase:
 
         return amplification_id
 
-    def load_amplification_parameters(
+    def load_amplification_params(
         self, amplification_id: int, params: List[str, Any]
     ) -> None:
         """Adds the privacy amplification attempt's parameter into the 'amplification_parameter' df
@@ -564,20 +478,20 @@ class DataBase:
         temp = pd.DataFrame(
             [
                 {
-                    AmplificationParametersColumns.NAME: param[0],
-                    AmplificationParametersColumns.VALUE: param[1],
-                    AmplificationParametersColumns.AMPLIFICATION_ID: amplification_id,
+                    AmpParamsCols.NAME: param[0],
+                    AmpParamsCols.VALUE: param[1],
+                    AmpParamsCols.AMPLIFICATION_ID: amplification_id,
                 }
                 for param in params
             ]
         )
 
-        self.amplification_parameters = pd.concat(
-            [self.amplification_parameters, temp]
+        self.amplification_params = pd.concat(
+            [self.amplification_params, temp]
         ).drop_duplicates(
             subset=[
-                AmplificationParametersColumns.NAME,
-                AmplificationParametersColumns.AMPLIFICATION_ID,
+                AmpParamsCols.NAME,
+                AmpParamsCols.AMPLIFICATION_ID,
             ],
             keep="first",
         )

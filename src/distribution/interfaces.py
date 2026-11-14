@@ -25,11 +25,11 @@ class Environment(Recordable):
         )
 
     @abstractmethod
-    def compute_eve_bits_from_measurements(
+    def compute_eve_info(
         self,
         measurements: List[str],
         labels: List[str],
-    ) -> List[str]:
+    ) -> str:
         """
         For environment that represents an eavesdropper's behavior, computes
         the bits measured by Eve on each attempt. Might be used to compute
@@ -87,7 +87,8 @@ class DistributionProtocol(Recordable):
         :param labels: The name of each qbit to be able to identify Alice's
         and Bob's qbits
         :type labels: List[str]
-        :return: Alice's raw key, Bob's raw key and the error rate in this order
+        :return: Alice's raw key, Bob's raw key and the error rate in this
+        order
         :rtype: Tuple[str,str,float]
         """
         raise NotImplementedError("This abstract method wasn't implemented")

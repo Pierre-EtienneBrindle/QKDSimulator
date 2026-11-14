@@ -35,13 +35,13 @@ class System:
         self.state = self.state.expand(new_part)
         self.labels = self.labels + new_labels
 
-    def evolve(self, channel: Kraus, quargs: List[str]) -> None:
+    def evolve(self, channel: Kraus, qargs: List[str]) -> None:
         """Applies the evolution to the system
 
         :param channel: The channel to apply on the system
         :type channel: Kraus
-        :param quargs: The name of the qbits to apply the channel to.
-        :type quargs: List[str]
+        :param qargs: The name of the qbits to apply the channel to.
+        :type qargs: List[str]
         """
-        quargs_in_index = [self.labels.index(label) for label in quargs]
-        self.state = self.state.evolve(channel, quargs_in_index)
+        qargs_in_index = [self.labels.index(label) for label in qargs]
+        self.state = self.state.evolve(channel, qargs_in_index)

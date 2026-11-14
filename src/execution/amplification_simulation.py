@@ -4,7 +4,7 @@ amplification protocol"""
 from src.amplification import AmplificationProtocol
 from src.data_management import (
     DataBase,
-    ReconciliationColumns,
+    RecCols,
 )
 
 
@@ -28,10 +28,10 @@ def execute_amplification_and_store(
     :rtype: int"""
 
     reconciliation = db.reconciliation[
-        db.reconciliation[ReconciliationColumns.ID] == reconciliation_id
+        db.reconciliation[RecCols.ID] == reconciliation_id
     ]
-    alice_raw: str = reconciliation[ReconciliationColumns.ALICE_KEY].iloc[0]
-    bob_raw: str = reconciliation[ReconciliationColumns.BOB_KEY].iloc[0]
+    alice_raw: str = reconciliation[RecCols.ALICE_KEY].iloc[0]
+    bob_raw: str = reconciliation[RecCols.BOB_KEY].iloc[0]
 
     alice_key, bob_key = amplification_protocol.amplify_keys(
         alice_raw, bob_raw
@@ -44,9 +44,9 @@ def execute_amplification_and_store(
         bob_key,
     )
 
-    db.load_amplification_parameters(
+    db.load_amplification_params(
         amplification_id,
-        amplification_protocol.get_all_params_names_and_values(),
+        amplification_protocol.get_all_param_and_values(),
     )
 
     return amplification_id

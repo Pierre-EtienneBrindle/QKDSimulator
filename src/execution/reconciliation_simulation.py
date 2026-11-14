@@ -1,17 +1,8 @@
 """Module that gives access to function to simulate a given information
 reconciliation protocol"""
 
-from typing import Callable, Dict, Any, List
 from src.reconciliation import ReconciliationProtocol
-from src.data_management import (
-    DataBase,
-    RunColumns,
-    DistributionProtocolColumns,
-    DistributionParametersColumns,
-    RunLabelsColumns,
-    RawMeasurementColumns,
-)
-from src.distribution import DistributionProtocol
+from src.data_management import DataBase, RunCols
 
 
 def execute_reconciliation_and_store(
@@ -30,47 +21,10 @@ def execute_reconciliation_and_store(
     :return: The id of the reconciliation attempt
     :rtype: int"""
 
-    dist_protocol_name: str = db.run[db.run[RunColumns.ID] == run_id][
-        RunColumns.PROTOCOL_NAME
-    ].iloc[0]
-
-    constructor: Callable[[Dict[str, Any]], DistributionProtocol] = (
-        db.distribution_protocol[
-            db.distribution_protocol[DistributionProtocolColumns.NAME]
-            == dist_protocol_name
-        ][DistributionProtocolColumns.CONSTRUCTOR].iloc[0]
-    )
-
-    parameters = db.distribution_parameters[
-        db.distribution_parameters[DistributionParametersColumns.RUN_ID]
-        == run_id
-    ]
-    parameters: Dict[str, Any] = dict(
-        zip(
-            parameters[DistributionParametersColumns.NAME],
-            parameters[DistributionParametersColumns.VALUE],
-        )
-    )
-
-    labels: List[str] = list(
-        db.run_labels[
-            db.run_labels[RunLabelsColumns.RUN_ID] == run_id
-        ].sort_values(by=RunLabelsColumns.QBIT_NUM)[
-            RunLabelsColumns.QBIT_LABEL
-        ]
-    )
-    measurements: List[str] = list(
-        db.raw_measurement[
-            db.raw_measurement[RawMeasurementColumns.RUN_ID] == run_id
-        ].sort_values(by=RawMeasurementColumns.ITERATION)[
-            RawMeasurementColumns.MEASUREMENT
-        ]
-    )
-
-    dist_protocol = constructor(parameters)
-    alice_raw, bob_raw, error_rate = dist_protocol.compute_raw_keys(
-        measurements, labels
-    )
+    run_info = db.run[db.run[RunCols.ID] == run_id]
+    alice_raw: str = run_info[RunCols.ALICE_KEY].iloc[0]
+    bob_raw: str = run_info[RunCols.BOB_KEY].iloc[0]
+    error_rate: float = run_info[RunCols.ERROR_RATE].iloc[0]
 
     alice_key, bob_key = reconciliation_protocol.reconciliate_keys(
         alice_raw,
@@ -85,9 +39,9 @@ def execute_reconciliation_and_store(
         bob_key,
     )
 
-    db.load_reconciliation_parameters(
+    db.load_reconciliation_params(
         reconciliation_id,
-        reconciliation_protocol.get_all_params_names_and_values(),
+        reconciliation_protocol.get_all_param_and_values(),
     )
 
     return reconciliation_id

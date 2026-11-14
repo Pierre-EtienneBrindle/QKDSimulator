@@ -9,9 +9,7 @@ class Recordable(ABC):
 
     @classmethod
     @abstractmethod
-    def get_instance_from_params_dict(
-        cls, params: Dict[str, Any]
-    ) -> Recordable:
+    def get_instance_from_params(cls, params: Dict[str, Any]) -> Recordable:
         """
         Static constructor for the object
 
