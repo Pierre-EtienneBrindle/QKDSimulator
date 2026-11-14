@@ -201,7 +201,7 @@ class BB84KeyDistribution(DistributionProtocol):
             alice_key[i] != bob_key[i]
             for i, is_detection in enumerate(random_subset)
             if is_detection == 1
-        ) / len(random_subset)
+        ) / np.sum(random_subset == 1)
 
         # If there's to much error, they abort
         if error_rate > self.max_error_rate:
