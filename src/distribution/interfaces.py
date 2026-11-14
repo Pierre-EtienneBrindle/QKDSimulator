@@ -1,32 +1,28 @@
 """Module containing all the interfaces to create custom QKD"""
 
-from typing import List, Any, Tuple
-from abc import ABC, abstractmethod
+from typing import List, Tuple
+from abc import abstractmethod
 
 from src.distribution.core import System
+from src.record_management import Recordable
 
 
-class Environment(ABC):
+class Environment(Recordable):
     """Abstract class/interface that represents the generic behavior of a
     noisy environment"""
 
     @abstractmethod
-    def get_name(self) -> str:
+    @classmethod
+    def is_eve(cls) -> bool:
         """
-        Gives the name of the environment
+        Returns wether the environment represents an Eve or not
 
-        :return: The name of the environment
-        :rtype: str"""
-        raise NotImplementedError("This abstract method wasn't implemented")
-
-    @abstractmethod
-    def get_all_param_and_values(self) -> List[Tuple[str, Any]]:
+        :return: Wether the environment represents and Eavesdropper
+        :rtype: bool
         """
-        Gets all the parameters and returns their names and values
-
-        :return: All names and values of each parameters as a list of tuples
-        :rtype: List[Tuple[str,Any]]"""
-        raise NotImplementedError("This abstract method wasn't implemented")
+        raise NotImplementedError(
+            "This abstract class method wasn't implemented"
+        )
 
     @abstractmethod
     def compute_eve_bits_from_measurements(
@@ -72,26 +68,8 @@ class Environment(ABC):
         raise NotImplementedError("This abstract method wasn't implemented")
 
 
-class DistributionProtocol(ABC):
+class DistributionProtocol(Recordable):
     """Abstract class/interface of all QKD protocol"""
-
-    @abstractmethod
-    def get_name(self) -> str:
-        """
-        Gives the name of the protocol
-
-        :return: The name of the protocol
-        :rtype: str"""
-        raise NotImplementedError("This abstract method wasn't implemented")
-
-    @abstractmethod
-    def get_all_params_names_and_values(self) -> List[Tuple[str, Any]]:
-        """
-        Gets all the parameters and returns their names and values
-
-        :return: All names and values of each parameters as a list of tuples
-        :rtype: List[Tuple[str,Any]]"""
-        raise NotImplementedError("This abstract method wasn't implemented")
 
     @abstractmethod
     def compute_raw_keys(
