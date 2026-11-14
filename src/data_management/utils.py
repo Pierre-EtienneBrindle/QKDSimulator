@@ -24,23 +24,13 @@ def save_db_in_folder(db: DataBase, folder_path: Path) -> None:
         orient="table",
         indent=4,
     )
-    db.distribution_parameters.to_json(
+    db.distribution_params.to_json(
         folder_path / DataBaseFileNames.DISTRIBUTION_PARAMETERS,
         orient="table",
         indent=4,
     )
-    db.environment_parameters.to_json(
+    db.environment_params.to_json(
         folder_path / DataBaseFileNames.ENVIRONMENT_PARAMETERS,
-        orient="table",
-        indent=4,
-    )
-    db.run_labels.to_json(
-        folder_path / DataBaseFileNames.RUN_LABELS,
-        orient="table",
-        indent=4,
-    )
-    db.raw_measurement.to_json(
-        folder_path / DataBaseFileNames.RAW_MEASUREMENTS,
         orient="table",
         indent=4,
     )
@@ -50,7 +40,7 @@ def save_db_in_folder(db: DataBase, folder_path: Path) -> None:
         orient="table",
         indent=4,
     )
-    db.reconciliation_parameters.to_json(
+    db.reconciliation_params.to_json(
         folder_path / DataBaseFileNames.RECONCILIATION_PARAMETERS,
         orient="table",
         indent=4,
@@ -61,7 +51,7 @@ def save_db_in_folder(db: DataBase, folder_path: Path) -> None:
         orient="table",
         indent=4,
     )
-    db.amplification_parameters.to_json(
+    db.amplification_params.to_json(
         folder_path / DataBaseFileNames.AMPLIFICATION_PARAMETERS,
         orient="table",
         indent=4,
@@ -82,20 +72,12 @@ def load_db_from_folder(folder_path: Path) -> DataBase:
     db = DataBase()
 
     db.run = pd.read_json(folder_path / DataBaseFileNames.RUN, orient="table")
-    db.distribution_parameters = pd.read_json(
+    db.distribution_params = pd.read_json(
         folder_path / DataBaseFileNames.DISTRIBUTION_PARAMETERS,
         orient="table",
     )
-    db.environment_parameters = pd.read_json(
+    db.environment_params = pd.read_json(
         folder_path / DataBaseFileNames.ENVIRONMENT_PARAMETERS,
-        orient="table",
-    )
-    db.run_labels = pd.read_json(
-        folder_path / DataBaseFileNames.RUN_LABELS,
-        orient="table",
-    )
-    db.raw_measurement = pd.read_json(
-        folder_path / DataBaseFileNames.RAW_MEASUREMENTS,
         orient="table",
     )
 
@@ -103,7 +85,7 @@ def load_db_from_folder(folder_path: Path) -> DataBase:
         folder_path / DataBaseFileNames.RECONCILIATION,
         orient="table",
     )
-    db.reconciliation_parameters = pd.read_json(
+    db.reconciliation_params = pd.read_json(
         folder_path / DataBaseFileNames.RECONCILIATION_PARAMETERS,
         orient="table",
     )
@@ -112,7 +94,7 @@ def load_db_from_folder(folder_path: Path) -> DataBase:
         folder_path / DataBaseFileNames.AMPLIFICATION,
         orient="table",
     )
-    db.amplification_parameters = pd.read_json(
+    db.amplification_params = pd.read_json(
         folder_path / DataBaseFileNames.AMPLIFICATION_PARAMETERS,
         orient="table",
     )

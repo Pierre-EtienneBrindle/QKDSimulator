@@ -20,7 +20,7 @@ classDiagram
                 +DensityMatrix state
                 +List~String~ labels
                 +add_qbits(List~String~ labels) None
-                +evolve(Kraus channel, List~String~ quargs) None
+                +evolve(Kraus channel, List~String~ qargs) None
             }
         }
 
@@ -74,88 +74,75 @@ classDiagram
             class DataBase{
                 + DataFrame run
                 + DataFrame distribution_protocol
-                + DataFrame distribution_parameters
+                + DataFrame distribution_params
                 + DataFrame environment 
-                + DataFrame environment_parameters
-                + DataFrame run_labels
-                + DataFrame raw_measurements
+                + DataFrame environment_params
                 + DataFrame reconciliation 
                 + DataFrame reconciliation_protocol 
-                + DataFrame reconciliation_parameters
+                + DataFrame reconciliation_params
                 + DataFrame amplification
                 + DataFrame amplification_protocol
-                + DataFrame amplification_parameters
-                + load_run(String protocol_name, String environment_name) int
+                + DataFrame amplification_params
+                + load_run(String protocol_name, String environment_name, String alice_key, String bob_key, String eve_info, float error_rate, int num_iterations) int
                 + load_distribution_protocols(List&ltCallable&ltDictionary&ltString,Any&gt,DistributionProtocol&gt&gt distribution_protocols) None
-                + load_distribution_parameters(int run_id, List~[String, Any]~ params) None
+                + load_distribution_params(int run_id, List~[String, Any]~ params) None
                 + load_environments(List&ltCallable&ltDictionary&ltString,Any&gt,Environment&gt&gt environments) None
-                + load_environments_parameters(int run_id, List~[String, Any]~ params) None
-                + load_run_labels(int run_id, List~String~ String) None
-                + load_raw_measurements(int run_id, List~String~ measurements) None
+                + load_environments_params(int run_id, List~[String, Any]~ params) None
                 + load_reconciliation_protocols(List&ltCallable&ltDictionary&ltString,Any&gt,ReconciliationProtocol&gt&gt reconciliation_protocols) None
                 + load reconciliation(String protocol_name, int run_id, String alice_key, String bob_key) int
-                + load reconciliation_parameters(int reconciliation_id, List~[String, Any] params) None
+                + load reconciliation_params(int reconciliation_id, List~[String, Any] params) None
                 + load_amplification_protocols(List&ltCallable&ltDictionary&ltString,Any&gt,AmplificationProtocol&gt&gt amplification_protocols) None
                 + load_amplification(String protocol_name, int reconciliation_id, String alice_key, String bob_key) int
-                + load_amplification_parameters(int amplification_id, List~[String ,Any] params) None
+                + load_amplification_params(int amplification_id, List~[String ,Any] params) None
             }
         }
 
         namespace schema{
-            class DistributionProtocolColumns{
+            class DistProtCols{
                 <<enumeration>>
                 +NAME$
                 +CONSTRUCTOR$
             }
 
-            class RunColumns{
+            class RunCols{
                 <<enumeration>>
                 +ID$
                 +PROTOCOL_NAME$
                 +ENVIRONMENT_NAME$
+                +ALICE_KEY$
+                +BOB_KEY$
+                +EVE_INFO$
+                +ERROR_RATE$
+                +NUM_ITERATIONS$
             }
 
-            class DistributionParametersColumns{
+            class DistParamsCols{
                 <<enumeration>>
                 +RUN_ID$
                 +NAME$
                 +VALUE$
             }
 
-            class EnvironmentColumns{
+            class EnvCols{
                 <<enumeration>>
                 +NAME$
                 +CONSTRUCTOR$
             }
 
-            class EnvironmentParametersColumns{
+            class EnvParamsCols{
                 <<enumeration>>
                 +RUN_ID$
                 +NAME$
                 +VALUE$
             }
 
-            class RunLabelsColumns{
-                <<enumeration>>
-                +RUN_ID$
-                +QBIT_NUM$
-                +QBIT_LABEL$
-            }
-
-            class RawMeasurementColumns{
-                <<enumeration>>
-                +RUN_ID$
-                +ITERATION$
-                +MEASUREMENT
-            }
-
-            class ReconciliationProtocolColumns{
+            class RecProtCols{
                 <<enumeration>>
                 +NAME$
                 +CONSTRUCTOR$
             }
 
-            class ReconciliationColumns{
+            class RecCols{
                 <<enumeration>>
                 +ID$
                 +PROTOCOL_NAME$
@@ -164,20 +151,20 @@ classDiagram
                 +BOB_KEY$
             }
 
-            class ReconciliationParametersColumns{
+            class RecParamsCols{
                 <<enumeration>>
                 +RECONCILIATION_ID$
                 +NAME$
                 +VALUE$
             }
 
-            class AmplificationProtocolColumns{
+            class AmpProtCols{
                 <<enumeration>>
                 +NAME$
                 +CONSTRUCTOR$
             }
 
-            class AmplificationColumns{
+            class AmpCols{
                 <<enumeration>>
                 +ID$
                 +PROTOCOL_NAME$
@@ -186,7 +173,7 @@ classDiagram
                 +BOB_KEY$
             }
 
-            class AmplificationParametersColumns{
+            class AmpParamsCols{
                 <<enumeration>>
                 +AMPLIFICATION_ID$
                 +NAME$
@@ -198,8 +185,6 @@ classDiagram
                 +RUN$
                 +DISTRIBUTION_PARAMETERS$
                 +ENVIRONMENT_PARAMETERS$
-                +RUN_LABELS$
-                +RAW_MEASUREMENTS$
                 +RECONCILIATION$
                 +RECONCILIATION_PARAMETERS$
                 +AMPLIFICATION$
@@ -229,16 +214,14 @@ erDiagram
 
     run }o -- || distribution_protocol : "uses"
     run }o -- || environment : "uses"
-    run || -- o{ distribution_parameters : "may have"
-    run || -- o{ environment_parameters : "may have"
-    run || -- |{ raw_measurements : "produces"
-    run || -- |{ run_labels : "uses"
+    run || -- o{ distribution_params : "may have"
+    run || -- o{ environment_params : "may have"
     reconciliation }o -- || run : "reconciles keys of"
     reconciliation }o -- || reconciliation_protocol : "uses"
-    reconciliation || -- o{ reconciliation_parameters : "may have"
+    reconciliation || -- o{ reconciliation_params : "may have"
     amplification }o -- || reconciliation : "amplifies keys' secrecy of"
     amplification }o -- || amplification_protocol : "uses"
-    amplification || -- o{ amplification_parameters : "may have"
+    amplification || -- o{ amplification_params : "may have"
 
     distribution_protocol{
         String name PK
@@ -249,9 +232,14 @@ erDiagram
         int id PK
         String protocol_name FK
         String environment_name
+        String alice_key
+        String bob_key
+        String eve_info
+        float error_rate
+        int num_iterations
     }
 
-    distribution_parameters{
+    distribution_params{
         int run_id PK,FK
         String name Pk
         Any value
@@ -263,22 +251,10 @@ erDiagram
     }
 
 
-    environment_parameters{
+    environment_params{
         int run_id PK,FK
         String name PK
         Any value
-    }
-
-    run_labels{
-        int run_id PK,FK
-        int qbit_num PK
-        String qbit_label
-    }
-
-    raw_measurements{
-        int run_id PK,FK
-        int iteration PK
-        String measurement
     }
 
     reconciliation{
@@ -294,7 +270,7 @@ erDiagram
         Callable~Dictionary~String-Any~-ReconciliationProtocol~ constructor
     }
 
-    reconciliation_parameters{
+    reconciliation_params{
         int reconciliation_id PK,FK
         String name PK
         Any value
@@ -313,7 +289,7 @@ erDiagram
         Callable~Dictionary~String-Any~-AmplificationProtocol~ constructor
     }
 
-    amplification_parameters{
+    amplification_params{
         int amplification_id PK,FK
         String name PK
         Any value

@@ -20,7 +20,7 @@ class NoiselessEnvironment(Environment):
     """Class for an environment that doesn't produce noise"""
 
     @classmethod
-    def get_instance_from_params_dict(cls, params):
+    def get_instance_from_params(cls, params):
         return NoiselessEnvironment()
 
     def apply_environment_after_segment(
@@ -35,7 +35,7 @@ class NoiselessEnvironment(Environment):
     def get_name(cls):
         return "noiseless_environment"
 
-    def compute_eve_bits_from_measurements(self, measurements, labels):
+    def compute_eve_info(self, measurements, labels):
         raise NotImplementedError("This environment doesn't represent an Eve")
 
     @classmethod
@@ -54,7 +54,7 @@ class SingleQbitDepolarization(Environment):
         self.p = prob
 
     @classmethod
-    def get_instance_from_params_dict(cls, params):
+    def get_instance_from_params(cls, params):
         return SingleQbitDepolarization(
             params[DepolarizingParams.PROBABILITY]
         )
@@ -66,7 +66,7 @@ class SingleQbitDepolarization(Environment):
     def get_all_param_and_values(self):
         return [(DepolarizingParams.PROBABILITY, self.p)]
 
-    def compute_eve_bits_from_measurements(self, measurements, labels):
+    def compute_eve_info(self, measurements, labels):
         raise NotImplementedError("This environment doesn't represent an Eve")
 
     def apply_environment_after_segment(
@@ -101,7 +101,7 @@ class SingleQbitAmplitudeDamping(Environment):
         self.p = prob
 
     @classmethod
-    def get_instance_from_params_dict(cls, params):
+    def get_instance_from_params(cls, params):
         return SingleQbitAmplitudeDamping(
             params[AmplitudeDampingParams.PROBABILITY]
         )
@@ -125,7 +125,7 @@ class SingleQbitAmplitudeDamping(Environment):
 
         return curr_system
 
-    def compute_eve_bits_from_measurements(self, measurements, labels):
+    def compute_eve_info(self, measurements, labels):
         raise NotImplementedError("This environment doesn't represent an Eve")
 
     @classmethod
@@ -152,7 +152,7 @@ class BB84KeyDistribution(DistributionProtocol):
         self.random_seed = random_seed
 
     @classmethod
-    def get_instance_from_params_dict(cls, params):
+    def get_instance_from_params(cls, params):
         return BB84KeyDistribution(
             params[BB84Params.MAX_ERROR_RATE],
             params[BB84Params.TARGET_KEY_SIZE],
@@ -298,7 +298,7 @@ class TomamichelEtAlKeyDistribution(DistributionProtocol):
         self.random_seed = random_seed
 
     @classmethod
-    def get_instance_from_params_dict(cls, params):
+    def get_instance_from_params(cls, params):
         return TomamichelEtAlKeyDistribution(
             params[TomamichelEtAlParams.BLOC_SIZE],
             params[TomamichelEtAlParams.DETECTION_SIZE],

@@ -52,23 +52,36 @@ def execute_run_and_store(
     :rtype: int"""
 
     system = compute_final_system(protocol, environment)
-
-    run_id = db.load_run(protocol.get_name(), environment.get_name())
-    db.load_distribution_parameters(
-        run_id,
-        protocol.get_all_params_names_and_values(),
-    )
-    db.load_environment_parameters(
-        run_id,
-        environment.get_all_param_and_values(),
-    )
     labels = system.labels[::-1]
-    db.load_run_labels(run_id, labels)
 
     measurements = []
     while not protocol.is_done(measurements, labels):
         measurements.append(system.state.measure()[0])
 
-    db.load_raw_measurements(run_id, measurements)
+    alice_key, bob_key, error_rate = protocol.compute_raw_keys(
+        measurements, labels
+    )
+
+    eve_info = ""
+    if environment.is_eve():
+        eve_info = environment.compute_eve_info(measurements, labels)
+
+    run_id = db.load_run(
+        protocol.get_name(),
+        environment.get_name(),
+        alice_key,
+        bob_key,
+        eve_info,
+        error_rate,
+        len(measurements),
+    )
+    db.load_distribution_params(
+        run_id,
+        protocol.get_all_param_and_values(),
+    )
+    db.load_environment_params(
+        run_id,
+        environment.get_all_param_and_values(),
+    )
 
     return run_id
