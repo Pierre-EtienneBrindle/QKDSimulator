@@ -21,40 +21,47 @@ def save_db_in_folder(db: DataBase, folder_path: Path) -> None:
 
     db.run.to_json(
         folder_path / DataBaseFileNames.RUN,
-        orient="table",
+        orient="split",
         indent=4,
+        index=False,
     )
     db.distribution_params.to_json(
         folder_path / DataBaseFileNames.DISTRIBUTION_PARAMETERS,
-        orient="table",
+        orient="split",
         indent=4,
+        index=False,
     )
     db.environment_params.to_json(
         folder_path / DataBaseFileNames.ENVIRONMENT_PARAMETERS,
-        orient="table",
+        orient="split",
         indent=4,
+        index=False,
     )
 
     db.reconciliation.to_json(
         folder_path / DataBaseFileNames.RECONCILIATION,
-        orient="table",
+        orient="split",
         indent=4,
+        index=False,
     )
     db.reconciliation_params.to_json(
         folder_path / DataBaseFileNames.RECONCILIATION_PARAMETERS,
-        orient="table",
+        orient="split",
         indent=4,
+        index=False,
     )
 
     db.amplification.to_json(
         folder_path / DataBaseFileNames.AMPLIFICATION,
-        orient="table",
+        orient="split",
         indent=4,
+        index=False,
     )
     db.amplification_params.to_json(
         folder_path / DataBaseFileNames.AMPLIFICATION_PARAMETERS,
-        orient="table",
+        orient="split",
         indent=4,
+        index=False,
     )
 
 
@@ -71,32 +78,32 @@ def load_db_from_folder(folder_path: Path) -> DataBase:
 
     db = DataBase()
 
-    db.run = pd.read_json(folder_path / DataBaseFileNames.RUN, orient="table")
+    db.run = pd.read_json(folder_path / DataBaseFileNames.RUN, orient="split")
     db.distribution_params = pd.read_json(
         folder_path / DataBaseFileNames.DISTRIBUTION_PARAMETERS,
-        orient="table",
+        orient="split",
     )
     db.environment_params = pd.read_json(
         folder_path / DataBaseFileNames.ENVIRONMENT_PARAMETERS,
-        orient="table",
+        orient="split",
     )
 
     db.reconciliation = pd.read_json(
         folder_path / DataBaseFileNames.RECONCILIATION,
-        orient="table",
+        orient="split",
     )
     db.reconciliation_params = pd.read_json(
         folder_path / DataBaseFileNames.RECONCILIATION_PARAMETERS,
-        orient="table",
+        orient="split",
     )
 
     db.amplification = pd.read_json(
         folder_path / DataBaseFileNames.AMPLIFICATION,
-        orient="table",
+        orient="split",
     )
     db.amplification_params = pd.read_json(
         folder_path / DataBaseFileNames.AMPLIFICATION_PARAMETERS,
-        orient="table",
+        orient="split",
     )
 
     return db

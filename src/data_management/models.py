@@ -183,7 +183,7 @@ class DataBase:
             ]
         )
 
-        self.run = pd.concat([self.run, temp])
+        self.run = pd.concat([self.run, temp]).reset_index(drop=True)
         return run_id
 
     def load_distribution_protocols(
@@ -207,11 +207,13 @@ class DataBase:
             ]
         )
 
-        self.distribution_protocol = pd.concat(
-            [self.distribution_protocol, temp]
-        ).drop_duplicates(
-            subset=[DistProtCols.NAME],
-            keep="last",
+        self.distribution_protocol = (
+            pd.concat([self.distribution_protocol, temp])
+            .reset_index(drop=True)
+            .drop_duplicates(
+                subset=[DistProtCols.NAME],
+                keep="last",
+            )
         )
 
     def load_distribution_params(
@@ -235,14 +237,16 @@ class DataBase:
             ]
         )
 
-        self.distribution_params = pd.concat(
-            [self.distribution_params, temp]
-        ).drop_duplicates(
-            subset=[
-                DistParamsCols.RUN_ID,
-                DistParamsCols.NAME,
-            ],
-            keep="first",
+        self.distribution_params = (
+            pd.concat([self.distribution_params, temp])
+            .reset_index(drop=True)
+            .drop_duplicates(
+                subset=[
+                    DistParamsCols.RUN_ID,
+                    DistParamsCols.NAME,
+                ],
+                keep="first",
+            )
         )
 
     def load_environments(
@@ -265,9 +269,11 @@ class DataBase:
             ]
         )
 
-        self.environment = pd.concat(
-            [self.environment, temp]
-        ).drop_duplicates(subset=[EnvCols.NAME], keep="last")
+        self.environment = (
+            pd.concat([self.environment, temp])
+            .reset_index(drop=True)
+            .drop_duplicates(subset=[EnvCols.NAME], keep="last")
+        )
 
     def load_environment_params(
         self, run_id: int, params: List[Tuple[str, Any]]
@@ -291,14 +297,16 @@ class DataBase:
             ]
         )
 
-        self.environment_params = pd.concat(
-            [self.environment_params, temp]
-        ).drop_duplicates(
-            subset=[
-                EnvParamsCols.RUN_ID,
-                EnvParamsCols.NAME,
-            ],
-            keep="first",
+        self.environment_params = (
+            pd.concat([self.environment_params, temp])
+            .reset_index(drop=True)
+            .drop_duplicates(
+                subset=[
+                    EnvParamsCols.RUN_ID,
+                    EnvParamsCols.NAME,
+                ],
+                keep="first",
+            )
         )
 
     def load_reconciliation_protocols(
@@ -321,11 +329,13 @@ class DataBase:
             ]
         )
 
-        self.reconciliation_protocol = pd.concat(
-            [self.reconciliation_protocol, temp]
-        ).drop_duplicates(
-            subset=[RecProtCols.NAME],
-            keep="last",
+        self.reconciliation_protocol = (
+            pd.concat([self.reconciliation_protocol, temp])
+            .reset_index(drop=True)
+            .drop_duplicates(
+                subset=[RecProtCols.NAME],
+                keep="last",
+            )
         )
 
     def load_reconciliation(
@@ -361,7 +371,9 @@ class DataBase:
             ]
         )
 
-        self.reconciliation = pd.concat([self.reconciliation, temp])
+        self.reconciliation = pd.concat(
+            [self.reconciliation, temp]
+        ).reset_index(drop=True)
 
         return reconciliation_id
 
@@ -387,14 +399,16 @@ class DataBase:
             ]
         )
 
-        self.reconciliation_params = pd.concat(
-            [self.reconciliation_params, temp]
-        ).drop_duplicates(
-            subset=[
-                RecParamsCols.NAME,
-                RecParamsCols.RECONCILIATION_ID,
-            ],
-            keep="first",
+        self.reconciliation_params = (
+            pd.concat([self.reconciliation_params, temp])
+            .reset_index(drop=True)
+            .drop_duplicates(
+                subset=[
+                    RecParamsCols.NAME,
+                    RecParamsCols.RECONCILIATION_ID,
+                ],
+                keep="first",
+            )
         )
 
     def load_amplification_protocols(
@@ -417,11 +431,13 @@ class DataBase:
             ]
         )
 
-        self.amplification_protocol = pd.concat(
-            [self.amplification_protocol, temp]
-        ).drop_duplicates(
-            subset=[AmpProtCols.NAME],
-            keep="last",
+        self.amplification_protocol = (
+            pd.concat([self.amplification_protocol, temp])
+            .reset_index(drop=True)
+            .drop_duplicates(
+                subset=[AmpProtCols.NAME],
+                keep="last",
+            )
         )
 
     def load_amplification(
@@ -460,7 +476,9 @@ class DataBase:
             }
         )
 
-        self.amplification = pd.concat([self.amplification, temp])
+        self.amplification = pd.concat(
+            [self.amplification, temp]
+        ).reset_index(drop=True)
 
         return amplification_id
 
@@ -486,12 +504,14 @@ class DataBase:
             ]
         )
 
-        self.amplification_params = pd.concat(
-            [self.amplification_params, temp]
-        ).drop_duplicates(
-            subset=[
-                AmpParamsCols.NAME,
-                AmpParamsCols.AMPLIFICATION_ID,
-            ],
-            keep="first",
+        self.amplification_params = (
+            pd.concat([self.amplification_params, temp])
+            .reset_index(drop=True)
+            .drop_duplicates(
+                subset=[
+                    AmpParamsCols.NAME,
+                    AmpParamsCols.AMPLIFICATION_ID,
+                ],
+                keep="first",
+            )
         )
