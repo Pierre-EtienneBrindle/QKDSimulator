@@ -11,8 +11,8 @@ class Environment(Recordable):
     """Abstract class/interface that represents the generic behavior of a
     noisy environment"""
 
-    @abstractmethod
     @classmethod
+    @abstractmethod
     def is_eve(cls) -> bool:
         """
         Returns wether the environment represents an Eve or not

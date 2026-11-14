@@ -7,8 +7,8 @@ from abc import ABC, abstractmethod
 class Recordable(ABC):
     """Interfaces for class that can be saved"""
 
-    @abstractmethod
     @classmethod
+    @abstractmethod
     def get_instance_from_params_dict(
         cls, params: Dict[str, Any]
     ) -> Recordable:
@@ -24,8 +24,8 @@ class Recordable(ABC):
             "This abstract class method wasn't implemented"
         )
 
-    @abstractmethod
     @classmethod
+    @abstractmethod
     def get_name(cls) -> str:
         """
         Gives the name of the object
