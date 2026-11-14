@@ -15,13 +15,14 @@ from src.distribution import (
 )
 from src.execution import execute_run_and_store
 
-from src.data_management import DataBase, save_db_in_folder
+from src.data_management import DataBase, save_db_in_folder, load_db_from_folder
 
 
 def main():
     print("WELCOME TO QKD SIMULATOR")
 
-    db = DataBase()
+    folder_path = Path.cwd() / "results"
+    db = load_db_from_folder(folder_path)
 
     protocols = [
         (
@@ -52,30 +53,30 @@ def main():
     db.load_environments(envs)
 
     rng = np.random.default_rng()
-    num_errors = 10
+    num_errors = 4
     max_errors = [
         0.1 + 0.4 * error / num_errors for error in range(num_errors + 1)
     ]
 
-    error_probabilities = [i / 10 for i in range(11)]
+    error_probabilities = [i / 10 for i in range(6)]
 
-    num_repetitions = 50
+    num_repetitions = 100
 
-    BB84_num_target_key_size = 10
-    BB84_delta_target_key_size = 100
+    BB84_num_target_key_size = 5
+    BB84_delta_target_key_size = 50
     BB84_target_key_sizes = [
         100 + i * BB84_delta_target_key_size
         for i in range(BB84_num_target_key_size + 1)
     ]
 
-    Tomamichel_num_bloc_len = 10
-    Tomamichel_delta_bloc_len = 100
+    Tomamichel_num_bloc_len = 5
+    Tomamichel_delta_bloc_len = 50
     Tomamichel_bloc_lens = [
         100 + i * Tomamichel_delta_bloc_len
         for i in range(Tomamichel_num_bloc_len + 1)
     ]
-    Tomamichel_num_detection_len = 10
-    Tomamichel_delta_detection_len = 100
+    Tomamichel_num_detection_len = 5
+    Tomamichel_delta_detection_len = 50
     Tomamichel_detection_lens = [
         100 + i * Tomamichel_delta_detection_len
         for i in range(Tomamichel_num_detection_len + 1)
@@ -93,7 +94,7 @@ def main():
                     seed,
                 )
                 execute_run_and_store(protocol, env, db)
-            save_db_in_folder(db, Path.cwd() / "results")
+            save_db_in_folder(db, folder_path)
 
     # BB84 Amplitude damping
     for p in error_probabilities:
@@ -108,7 +109,7 @@ def main():
                         seed,
                     )
                     execute_run_and_store(protocol, env, db)
-                save_db_in_folder(db, Path.cwd() / "results")
+                save_db_in_folder(db, folder_path)
 
     # BB84 Depolarizing
     for p in error_probabilities:
@@ -123,7 +124,7 @@ def main():
                         seed,
                     )
                     execute_run_and_store(protocol, env, db)
-                save_db_in_folder(db, Path.cwd() / "results")
+                save_db_in_folder(db, folder_path)
 
     # Tomamichel Noiseless
     env = NoiselessEnvironment()
@@ -139,7 +140,7 @@ def main():
                         seed,
                     )
                     execute_run_and_store(protocol, env, db)
-                save_db_in_folder(db, Path.cwd() / "results")
+                save_db_in_folder(db, folder_path)
 
     # Tomamichel Amplitude damping
     for p in error_probabilities:
@@ -156,7 +157,7 @@ def main():
                             seed,
                         )
                         execute_run_and_store(protocol, env, db)
-                    save_db_in_folder(db, Path.cwd() / "results")
+                    save_db_in_folder(db, folder_path)
 
     # BB84 Depolarizing
     for p in error_probabilities:
@@ -173,7 +174,7 @@ def main():
                             seed,
                         )
                         execute_run_and_store(protocol, env, db)
-                    save_db_in_folder(db, Path.cwd() / "results")
+                    save_db_in_folder(db, folder_path)
 
 
 if __name__ == "__main__":
