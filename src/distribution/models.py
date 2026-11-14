@@ -1,8 +1,5 @@
 """Instances of the different interfaces"""
 
-# Using random even tho it's not cryptographically secured
-import random
-
 import numpy as np
 from qiskit import QuantumCircuit
 from qiskit.quantum_info import Kraus, Operator
@@ -22,6 +19,10 @@ from src.distribution.schema import (
 class NoiselessEnvironment(Environment):
     """Class for an environment that doesn't produce noise"""
 
+    @classmethod
+    def get_instance_from_params_dict(cls, params):
+        return NoiselessEnvironment()
+
     def apply_environment_after_segment(
         self, segment_number, curr_system, transmitted_qbits
     ):
@@ -30,11 +31,16 @@ class NoiselessEnvironment(Environment):
     def get_all_param_and_values(self):
         return []
 
-    def get_name(self):
+    @classmethod
+    def get_name(cls):
         return "noiseless_environment"
 
     def compute_eve_bits_from_measurements(self, measurements, labels):
         raise NotImplementedError("This environment doesn't represent an Eve")
+
+    @classmethod
+    def is_eve(cls):
+        return False
 
 
 class SingleQbitDepolarization(Environment):
@@ -47,7 +53,14 @@ class SingleQbitDepolarization(Environment):
         super().__init__()
         self.p = prob
 
-    def get_name(self):
+    @classmethod
+    def get_instance_from_params_dict(cls, params):
+        return SingleQbitDepolarization(
+            params[DepolarizingParams.PROBABILITY]
+        )
+
+    @classmethod
+    def get_name(cls):
         return "single_qbit_depolarization"
 
     def get_all_param_and_values(self):
@@ -60,9 +73,9 @@ class SingleQbitDepolarization(Environment):
         self, segment_number, curr_system, transmitted_qbits
     ):
 
-        e_x = np.sqrt(self.p) * Operator.from_label("X").data
-        e_y = np.sqrt(self.p) * Operator.from_label("Y").data
-        e_z = np.sqrt(self.p) * Operator.from_label("Z").data
+        e_x = np.sqrt(self.p / 4) * Operator.from_label("X").data
+        e_y = np.sqrt(self.p / 4) * Operator.from_label("Y").data
+        e_z = np.sqrt(self.p / 4) * Operator.from_label("Z").data
         e_i = np.sqrt(1 - 3 * self.p / 4) * Operator.from_label("I").data
 
         kraus = Kraus([e_x, e_y, e_z, e_i])
@@ -71,6 +84,10 @@ class SingleQbitDepolarization(Environment):
             curr_system.evolve(kraus, [qbit])
 
         return curr_system
+
+    @classmethod
+    def is_eve(cls):
+        return False
 
 
 class SingleQbitAmplitudeDamping(Environment):
@@ -83,7 +100,14 @@ class SingleQbitAmplitudeDamping(Environment):
         super().__init__()
         self.p = prob
 
-    def get_name(self):
+    @classmethod
+    def get_instance_from_params_dict(cls, params):
+        return SingleQbitAmplitudeDamping(
+            params[AmplitudeDampingParams.PROBABILITY]
+        )
+
+    @classmethod
+    def get_name(cls):
         return "single_qbit_amplitude_damping"
 
     def get_all_param_and_values(self):
@@ -92,8 +116,8 @@ class SingleQbitAmplitudeDamping(Environment):
     def apply_environment_after_segment(
         self, segment_number, curr_system, transmitted_qbits
     ):
-        e_0 = np.array([[1, 0], [0, np.sqrt(1 - self.p)]])
-        e_1 = np.array([[0, np.sqrt(self.p)], [0, 0]])
+        e_0 = np.array([[1.0, 0], [0.0, np.sqrt(1 - self.p)]])
+        e_1 = np.array([[0.0, np.sqrt(self.p)], [0.0, 0.0]])
         kraus = Kraus([e_0, e_1])
 
         for qbit in transmitted_qbits:
@@ -103,6 +127,10 @@ class SingleQbitAmplitudeDamping(Environment):
 
     def compute_eve_bits_from_measurements(self, measurements, labels):
         raise NotImplementedError("This environment doesn't represent an Eve")
+
+    @classmethod
+    def is_eve(cls):
+        return False
 
 
 class BB84KeyDistribution(DistributionProtocol):
@@ -115,7 +143,7 @@ class BB84KeyDistribution(DistributionProtocol):
     def __init__(
         self,
         max_error_rate: float,
-        target_key_size: float,
+        target_key_size: int,
         random_seed: int,
     ):
         super().__init__()
@@ -123,10 +151,19 @@ class BB84KeyDistribution(DistributionProtocol):
         self.target_key_size = target_key_size
         self.random_seed = random_seed
 
-    def get_name(self):
+    @classmethod
+    def get_instance_from_params_dict(cls, params):
+        return BB84KeyDistribution(
+            params[BB84Params.MAX_ERROR_RATE],
+            params[BB84Params.TARGET_KEY_SIZE],
+            params[BB84Params.RANDOM_SEED],
+        )
+
+    @classmethod
+    def get_name(cls):
         return "BB84_key_distribution"
 
-    def get_all_params_names_and_values(self):
+    def get_all_param_and_values(self):
         return [
             (BB84Params.TARGET_KEY_SIZE, self.target_key_size),
             (BB84Params.MAX_ERROR_RATE, self.max_error_rate),
@@ -158,11 +195,8 @@ class BB84KeyDistribution(DistributionProtocol):
         # Sets the random seed each time to make results determinist.
         # This shouldn't be done in practice, but it's needed for the
         # analysis of the protocol
-        random.seed(self.random_seed)
-        random_subset = [
-            i for i in range(len(alice_key)) if random.randint(0, 1) == 0
-        ]
-
+        rng = np.random.default_rng(int(self.random_seed))
+        random_subset = rng.integers(low=0, high=2, size=len(alice_key))
         error_rate = sum(
             alice_key[i] != bob_key[i] for i in random_subset
         ) / len(random_subset)
@@ -263,10 +297,20 @@ class TomamichelEtAlKeyDistribution(DistributionProtocol):
         self.detection_size = detection_size
         self.random_seed = random_seed
 
-    def get_name(self):
+    @classmethod
+    def get_instance_from_params_dict(cls, params):
+        return TomamichelEtAlKeyDistribution(
+            params[TomamichelEtAlParams.BLOC_SIZE],
+            params[TomamichelEtAlParams.DETECTION_SIZE],
+            params[TomamichelEtAlParams.MAX_ERROR_RATE],
+            params[TomamichelEtAlParams.RANDOM_SEED],
+        )
+
+    @classmethod
+    def get_name(cls):
         return "tomamichel_et_al_key_distribution"
 
-    def get_all_params_names_and_values(self):
+    def get_all_param_and_values(self):
         return [
             (TomamichelEtAlParams.MAX_ERROR_RATE, self.max_error_rate),
             (TomamichelEtAlParams.BLOC_SIZE, self.bloc_size),
@@ -311,8 +355,8 @@ class TomamichelEtAlKeyDistribution(DistributionProtocol):
         # Sets the random seed each time to make results determinist.
         # This shouldn't be done in practice, but it's needed for the
         # analysis of the protocol
-        random.seed(self.random_seed)
-        key_subset = random.sample(bloc, k=int(self.bloc_size))
+        rng = np.random.default_rng(int(self.random_seed))
+        key_subset = rng.choice(bloc, size=int(self.bloc_size), replace=False)
 
         alice_key = "".join(
             m[alice_bit_idx]

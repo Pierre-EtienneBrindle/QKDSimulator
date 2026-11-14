@@ -1,6 +1,6 @@
 "Module containing classes that simplify data recording and manipulation"
 
-from typing import Callable, List, Dict, Any, Tuple
+from typing import List, Any, Tuple
 import pandas as pd
 
 from src.data_management.schema import (
@@ -207,11 +207,10 @@ class DataBase:
 
     def load_distribution_protocols(
         self,
-        distribution_protocols: List[
-            Tuple[str, Callable[[Dict[str, Any]], DistributionProtocol]]
-        ],
+        distribution_protocols: List[type[DistributionProtocol]],
     ) -> None:
-        """Loads the distribution protocols inside the 'distribution_protocol' DataFrame
+        """Loads the distribution protocols inside the
+        'distribution_protocol' DataFrame
 
         :param distribution_protocols: The protocols to add to the DataFrame
         :type distribution_protocols:
@@ -221,10 +220,10 @@ class DataBase:
         temp = pd.DataFrame(
             [
                 {
-                    DistributionProtocolColumns.NAME: item[0],
-                    DistributionProtocolColumns.CONSTRUCTOR: item[1],
+                    DistributionProtocolColumns.NAME: protocol.get_name(),
+                    DistributionProtocolColumns.CONSTRUCTOR: protocol.get_instance_from_params_dict,
                 }
-                for item in distribution_protocols
+                for protocol in distribution_protocols
             ]
         )
 
@@ -268,9 +267,7 @@ class DataBase:
 
     def load_environments(
         self,
-        environments: List[
-            Tuple[str, Callable[[Dict[str, Any], Environment]]]
-        ],
+        environments: List[type[Environment]],
     ) -> None:
         """Loads the environments inside the 'environment' DataFrame
 
@@ -282,10 +279,10 @@ class DataBase:
         temp = pd.DataFrame(
             [
                 {
-                    EnvironmentColumns.NAME: item[0],
-                    EnvironmentColumns.CONSTRUCTOR: item[1],
+                    EnvironmentColumns.NAME: env.get_name(),
+                    EnvironmentColumns.CONSTRUCTOR: env.get_instance_from_params_dict,
                 }
-                for item in environments
+                for env in environments
             ]
         )
 
@@ -386,9 +383,7 @@ class DataBase:
 
     def load_reconciliation_protocols(
         self,
-        reconciliation_protocols: List[
-            Tuple[str, Callable[[Dict[str, Any]], ReconciliationProtocol]]
-        ],
+        reconciliation_protocols: List[type[ReconciliationProtocol]],
     ) -> None:
         """Loads the reconciliation protocols inside the 'reconciliation_protocol' DataFrame
 
@@ -400,10 +395,10 @@ class DataBase:
         temp = pd.DataFrame(
             [
                 {
-                    ReconciliationProtocolColumns.NAME: item[0],
-                    ReconciliationProtocolColumns.CONSTRUCTOR: item[1],
+                    ReconciliationProtocolColumns.NAME: protocol.get_name(),
+                    ReconciliationProtocolColumns.CONSTRUCTOR: protocol.get_instance_from_params_dict,
                 }
-                for item in reconciliation_protocols
+                for protocol in reconciliation_protocols
             ]
         )
 
@@ -487,9 +482,7 @@ class DataBase:
 
     def load_amplification_protocols(
         self,
-        amplification_protocols: List[
-            Tuple[str, Callable[[Dict[str, Any]], AmplificationProtocol]]
-        ],
+        amplification_protocols: List[type[AmplificationProtocol]],
     ) -> None:
         """Loads the amplification protocols inside the 'amplification_protocol' DataFrame
 
@@ -501,10 +494,10 @@ class DataBase:
         temp = pd.DataFrame(
             [
                 {
-                    AmplificationProtocolColumns.NAME: item[0],
-                    AmplificationProtocolColumns.CONSTRUCTOR: item[1],
+                    AmplificationProtocolColumns.NAME: protocol.get_name(),
+                    AmplificationProtocolColumns.CONSTRUCTOR: protocol.get_instance_from_params_dict,
                 }
-                for item in amplification_protocols
+                for protocol in amplification_protocols
             ]
         )
 
