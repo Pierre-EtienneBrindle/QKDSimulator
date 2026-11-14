@@ -83,6 +83,5 @@ def execute_run_and_store(
         run_id,
         environment.get_all_param_and_values(),
     )
-    db.load_run_labels(run_id, labels)
 
     return run_id
