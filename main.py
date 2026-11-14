@@ -7,15 +7,13 @@ from src.distribution import (
     NoiselessEnvironment,
     SingleQbitAmplitudeDamping,
     SingleQbitDepolarization,
-    create_bb84_protocol,
-    create_noiseless_environment,
-    create_tomamichel_et_al_protocol,
-    create_single_qbit_amplitude_damping,
-    create_single_qbit_depolarization,
 )
 from src.execution import execute_run_and_store
 
-from src.data_management import DataBase, save_db_in_folder, load_db_from_folder
+from src.data_management import (
+    save_db_in_folder,
+    load_db_from_folder,
+)
 
 
 def main():
@@ -24,31 +22,13 @@ def main():
     folder_path = Path.cwd() / "results"
     db = load_db_from_folder(folder_path)
 
-    protocols = [
-        (
-            BB84KeyDistribution(0, 0, 0).get_name(),
-            create_bb84_protocol,
-        ),
-        (
-            TomamichelEtAlKeyDistribution(0, 0, 0, 0).get_name(),
-            create_tomamichel_et_al_protocol,
-        ),
-    ]
+    protocols = [BB84KeyDistribution, TomamichelEtAlKeyDistribution]
     db.load_distribution_protocols(protocols)
 
     envs = [
-        (
-            NoiselessEnvironment().get_name(),
-            create_noiseless_environment,
-        ),
-        (
-            SingleQbitDepolarization(0).get_name(),
-            create_single_qbit_depolarization,
-        ),
-        (
-            SingleQbitAmplitudeDamping(0).get_name(),
-            create_single_qbit_amplitude_damping,
-        ),
+        NoiselessEnvironment,
+        SingleQbitAmplitudeDamping,
+        SingleQbitDepolarization,
     ]
     db.load_environments(envs)
 
