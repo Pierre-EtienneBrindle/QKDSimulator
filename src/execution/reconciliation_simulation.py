@@ -3,6 +3,7 @@ reconciliation protocol"""
 
 from src.reconciliation import ReconciliationProtocol
 from src.data_management import DataBase, RunCols
+from src.execution.utils import base_2_to_base_16, base_16_to_base_2
 
 
 def execute_reconciliation_and_store(
@@ -31,16 +32,16 @@ def execute_reconciliation_and_store(
         return -1
 
     alice_key, bob_key = reconciliation_protocol.reconciliate_keys(
-        alice_raw,
-        bob_raw,
+        base_16_to_base_2(alice_raw),
+        base_16_to_base_2(bob_raw),
         error_rate,
     )
 
     reconciliation_id = db.load_reconciliation(
         reconciliation_protocol.get_name(),
         run_id,
-        alice_key,
-        bob_key,
+        base_2_to_base_16(alice_key),
+        base_2_to_base_16(bob_key),
     )
 
     db.load_reconciliation_params(

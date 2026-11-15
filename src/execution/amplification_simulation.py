@@ -6,6 +6,7 @@ from src.data_management import (
     DataBase,
     RecCols,
 )
+from src.execution.utils import base_2_to_base_16, base_16_to_base_2
 
 
 def execute_amplification_and_store(
@@ -38,14 +39,15 @@ def execute_amplification_and_store(
         return -1
 
     alice_key, bob_key = amplification_protocol.amplify_keys(
-        alice_raw, bob_raw
+        base_16_to_base_2(alice_raw),
+        base_16_to_base_2(bob_raw),
     )
 
     amplification_id = db.load_amplification(
         amplification_protocol.get_name(),
         reconciliation_id,
-        alice_key,
-        bob_key,
+        base_2_to_base_16(alice_key),
+        base_2_to_base_16(bob_key),
     )
 
     db.load_amplification_params(
