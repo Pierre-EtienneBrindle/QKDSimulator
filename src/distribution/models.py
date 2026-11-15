@@ -159,8 +159,8 @@ class BB84KeyDistribution(DistributionProtocol):
     def get_instance_from_params(cls, params):
         return BB84KeyDistribution(
             params[BB84Params.MAX_ERROR_RATE],
-            params[BB84Params.TARGET_KEY_SIZE],
-            params[BB84Params.RANDOM_SEED],
+            int(params[BB84Params.TARGET_KEY_SIZE]),
+            int(params[BB84Params.RANDOM_SEED]),
         )
 
     @classmethod
@@ -296,7 +296,7 @@ class BB84Eve(Environment):
     def get_instance_from_params(cls, params):
         return BB84Eve(
             params[BB84EveParams.ATTACK_PROBABILITY],
-            params[BB84EveParams.SEED],
+            int(params[BB84EveParams.SEED]),
         )
 
     @classmethod
@@ -406,10 +406,10 @@ class TomamichelEtAlKeyDistribution(DistributionProtocol):
     @classmethod
     def get_instance_from_params(cls, params):
         return TomamichelEtAlKeyDistribution(
-            params[TomamichelEtAlParams.BLOC_SIZE],
-            params[TomamichelEtAlParams.DETECTION_SIZE],
+            int(params[TomamichelEtAlParams.BLOC_SIZE]),
+            int(params[TomamichelEtAlParams.DETECTION_SIZE]),
             params[TomamichelEtAlParams.MAX_ERROR_RATE],
-            params[TomamichelEtAlParams.RANDOM_SEED],
+            int(params[TomamichelEtAlParams.RANDOM_SEED]),
         )
 
     @classmethod
@@ -593,9 +593,9 @@ class TomamichelEtAlEve(Environment):
     def get_instance_from_params(cls, params):
         return TomamichelEtAlEve(
             params[TomamichelEtAlEveParams.ATTACK_PROBABILITY],
-            params[TomamichelEtAlEveParams.SEED],
-            params[TomamichelEtAlEveParams.BLOC_SIZE],
-            params[TomamichelEtAlEveParams.DETECTION_SIZE],
+            int(params[TomamichelEtAlEveParams.SEED]),
+            int(params[TomamichelEtAlEveParams.BLOC_SIZE]),
+            int(params[TomamichelEtAlEveParams.DETECTION_SIZE]),
         )
 
     def get_all_param_and_values(self):
