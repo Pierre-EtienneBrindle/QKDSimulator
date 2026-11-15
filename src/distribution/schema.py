@@ -33,6 +33,21 @@ class BB84QbitLabels(StrEnum):
     BOB_BASE_CHOICE = auto()
 
 
+class BB84EveParams(StrEnum):
+    """Parameters of Eve when attacking the BB84 key distribution protocol"""
+
+    ATTACK_PROBABILITY = auto()
+    SEED = auto()
+
+
+class BB84EveQubitLabels(StrEnum):
+    """Names of the qbit added by Eve in the BB84 key distribution protocol"""
+
+    EVE_COPY = auto()
+    EVE_BASE_CHOICE = auto()
+    EVE_ATTACK_CHOICE = auto()
+
+
 class TomamichelEtAlParams(StrEnum):
     """Names of the parameters of the Tomamichel et al. QKD protocol"""
 
@@ -49,3 +64,20 @@ class TomamichelEtAlQbitLabels(StrEnum):
     ALICE_BASE_CHOICE = auto()
     TRANSMITTED = auto()
     BOB_BASE_CHOICE = auto()
+
+
+class TomamichelEtAlEveParams(StrEnum):
+    """Parameters of Eve when attacking the Tomamichel et al. QKD protocol"""
+
+    ATTACK_PROBABILITY = auto()
+    SEED = auto()
+    BLOC_SIZE = auto()
+    DETECTION_SIZE = auto()
+
+
+class TomamichelEtAlEveQubitLabels(StrEnum):
+    """Names of the qbit added by Eve in the Tomamichel et al. QKD protocol"""
+
+    EVE_COPY = auto()
+    EVE_BASE_CHOICE = auto()
+    EVE_ATTACK_CHOICE = auto()

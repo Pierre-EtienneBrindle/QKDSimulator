@@ -8,6 +8,43 @@ from src.data_management.models import DataBase
 from src.data_management.schema import DataBaseFileNames
 
 
+def check_if_folder_is_correct(folder_path: Path) -> bool:
+    """
+    Checks if the folder contains the correct files
+
+    :param folder_path: The path of the folder to check
+    :type folder_path: Path
+    :returns: Whether the folder path given is setup to save data
+    :rtype: bool"""
+
+    if not folder_path.exists() or not folder_path.is_dir():
+        return False
+
+    for fn in DataBaseFileNames:
+        file_path = folder_path / fn
+        if not file_path.exists():
+            return False
+
+    return True
+
+
+def setup_folder(folder_path: Path) -> None:
+    """
+    Setups the folder for data management
+
+    :param folder_path: The path of the folder to setup
+    :type folder_path: Path"""
+    if folder_path.exists() and not folder_path.is_dir():
+        raise ValueError(
+            f"The given path is not a folder path. Path given : {folder_path}"
+        )
+
+    folder_path.mkdir(parents=True, exist_ok=True)
+
+    # Create dummy database
+    save_db_in_folder(DataBase(), folder_path)
+
+
 def save_db_in_folder(db: DataBase, folder_path: Path) -> None:
     """Saves the content of the database into a given folder. Does not save
     table with function pointers (distribution_protocol_info,

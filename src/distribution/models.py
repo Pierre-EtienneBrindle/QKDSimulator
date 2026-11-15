@@ -11,8 +11,12 @@ from src.distribution.schema import (
     AmplitudeDampingParams,
     BB84Params,
     BB84QbitLabels,
+    BB84EveParams,
+    BB84EveQubitLabels,
     TomamichelEtAlParams,
     TomamichelEtAlQbitLabels,
+    TomamichelEtAlEveParams,
+    TomamichelEtAlEveQubitLabels,
 )
 
 
@@ -223,14 +227,7 @@ class BB84KeyDistribution(DistributionProtocol):
         match (segment_number):
             case 0:
                 curr_system = System()
-                curr_system.add_qbits(
-                    [
-                        BB84QbitLabels.ALICE_BIT_CHOICE,
-                        BB84QbitLabels.ALICE_BASE_CHOICE,
-                        BB84QbitLabels.TRANSMITTED,
-                        BB84QbitLabels.BOB_BASE_CHOICE,
-                    ]
-                )
+                curr_system.add_qbits(list(BB84QbitLabels))
                 curr_system.evolve(
                     self.alice_state_preparation_channel(),
                     [
@@ -275,6 +272,113 @@ class BB84KeyDistribution(DistributionProtocol):
         return (
             len(measurements)
             >= 4 * (1 + 2 * self.max_error_rate) * self.target_key_size
+        )
+
+
+class BB84Eve(Environment):
+    """Class representing the behavior of an eavesdropper trying to listen to
+    a BB84 key distribution instance"""
+
+    p: float
+    seed: int
+
+    def __init__(self, attack_probability: float, seed: int):
+        """NOTE : seed NEEDS to be the same as BB84 protocol it's attacking"""
+        super().__init__()
+        self.p = attack_probability
+        self.seed = seed
+
+    @classmethod
+    def get_name(cls):
+        return "BB84_eve"
+
+    @classmethod
+    def get_instance_from_params(cls, params):
+        return BB84Eve(
+            params[BB84EveParams.ATTACK_PROBABILITY],
+            params[BB84EveParams.SEED],
+        )
+
+    @classmethod
+    def is_eve(cls):
+        return True
+
+    def get_all_param_and_values(self):
+        return [
+            (BB84EveParams.ATTACK_PROBABILITY, self.p),
+            (BB84EveParams.SEED, self.seed),
+        ]
+
+    def apply_environment_after_segment(
+        self, segment_number, curr_system, transmitted_qbits
+    ):
+        match (segment_number):
+            case 0:
+                curr_system.add_qbits(list(BB84EveQubitLabels))
+                curr_system.evolve(
+                    self.eve_state_pseudo_measurement(),
+                    [
+                        transmitted_qbits[0],
+                        BB84EveQubitLabels.EVE_COPY,
+                        BB84EveQubitLabels.EVE_BASE_CHOICE,
+                        BB84EveQubitLabels.EVE_ATTACK_CHOICE,
+                    ],
+                )
+                return curr_system
+            case _:
+                return curr_system
+
+    def eve_state_pseudo_measurement(self):
+        """Creates a circuit where Eve pseudo-measures the transmitted qubit"""
+
+        # Create circuit where Eve has a 50/50 prob of pseudo-measuring in X or Z basis
+        pseudo_measure_qc = QuantumCircuit(3)
+        pseudo_measure_qc.h(2)
+        pseudo_measure_qc.ch(2, 0)
+        pseudo_measure_qc.cx(0, 1)
+        pseudo_measure_qc.ch(2, 0)
+
+        pseudo_measure_ctrl_gate = pseudo_measure_qc.to_gate().control(
+            num_ctrl_qubits=1, ctrl_state="1"
+        )
+
+        qc = QuantumCircuit(4)
+        angle = 2 * np.asin(np.sqrt(self.p))
+        qc.ry(angle, 3)
+        qc.append(pseudo_measure_ctrl_gate, range(4))
+
+        return Kraus(qc)
+
+    def compute_eve_info(self, measurements, labels):
+        alice_base_idx = labels.index(BB84QbitLabels.ALICE_BASE_CHOICE)
+        bob_base_idx = labels.index(BB84QbitLabels.BOB_BASE_CHOICE)
+        eve_base_idx = labels.index(BB84EveQubitLabels.EVE_BASE_CHOICE)
+        eve_attack_idx = labels.index(BB84EveQubitLabels.EVE_ATTACK_CHOICE)
+        eve_bit_idx = labels.index(BB84EveQubitLabels.EVE_COPY)
+
+        kept_measurements = [
+            m for m in measurements if m[alice_base_idx] == m[bob_base_idx]
+        ]
+
+        rng = np.random.default_rng(int(self.seed))
+        random_subset = rng.integers(
+            low=0, high=2, size=len(kept_measurements)
+        )
+
+        kept_measurements = [
+            m
+            for i, m in enumerate(kept_measurements)
+            if random_subset[i] == 0
+        ]
+
+        return "".join(
+            (
+                m[eve_bit_idx]
+                if m[eve_base_idx] == m[alice_base_idx]
+                and m[eve_attack_idx] == "1"
+                else "x"
+            )
+            for m in kept_measurements
         )
 
 
@@ -380,14 +484,7 @@ class TomamichelEtAlKeyDistribution(DistributionProtocol):
         match (segment_number):
             case 0:
                 curr_system = System()
-                curr_system.add_qbits(
-                    [
-                        TomamichelEtAlQbitLabels.ALICE_BIT_CHOICE,
-                        TomamichelEtAlQbitLabels.ALICE_BASE_CHOICE,
-                        TomamichelEtAlQbitLabels.TRANSMITTED,
-                        TomamichelEtAlQbitLabels.BOB_BASE_CHOICE,
-                    ]
-                )
+                curr_system.add_qbits(list(TomamichelEtAlQbitLabels))
                 curr_system.evolve(
                     self.alice_state_preparation_channel(),
                     [
@@ -461,4 +558,134 @@ class TomamichelEtAlKeyDistribution(DistributionProtocol):
         return (
             bloc_len >= self.bloc_size
             and detection_len >= self.detection_size
+        )
+
+
+class TomamichelEtAlEve(Environment):
+    """Class representing the behavior of an eavesdropper trying to listen to
+    a Tomamichel et al. QKD protocol instance"""
+
+    p: float
+    seed: int
+    bloc_size: int
+    detection_size: int
+
+    def __init__(
+        self,
+        probability: float,
+        seed: int,
+        bloc_size: int,
+        detection_size: int,
+    ):
+        """NOTE : seed, bloc_size and detection_size should be the same as
+        the Tomamichel et al. QKD protocol instance"""
+        super().__init__()
+        self.p = probability
+        self.seed = seed
+        self.bloc_size = bloc_size
+        self.detection_size = detection_size
+
+    @classmethod
+    def get_name(cls):
+        return "tomamichel_eve"
+
+    @classmethod
+    def get_instance_from_params(cls, params):
+        return TomamichelEtAlEve(
+            params[TomamichelEtAlEveParams.ATTACK_PROBABILITY],
+            params[TomamichelEtAlEveParams.SEED],
+            params[TomamichelEtAlEveParams.BLOC_SIZE],
+            params[TomamichelEtAlEveParams.DETECTION_SIZE],
+        )
+
+    def get_all_param_and_values(self):
+        return [
+            (TomamichelEtAlEveParams.ATTACK_PROBABILITY, self.p),
+            (TomamichelEtAlEveParams.SEED, self.seed),
+            (TomamichelEtAlEveParams.BLOC_SIZE, self.bloc_size),
+            (TomamichelEtAlEveParams.DETECTION_SIZE, self.detection_size),
+        ]
+
+    @classmethod
+    def is_eve(cls):
+        return True
+
+    def apply_environment_after_segment(
+        self, segment_number, curr_system, transmitted_qbits
+    ):
+        match (segment_number):
+            case 0:
+                curr_system.add_qbits(list(TomamichelEtAlEveQubitLabels))
+                curr_system.evolve(
+                    self.eve_state_pseudo_measurement(),
+                    [
+                        transmitted_qbits[0],
+                        TomamichelEtAlEveQubitLabels.EVE_COPY,
+                        TomamichelEtAlEveQubitLabels.EVE_BASE_CHOICE,
+                        TomamichelEtAlEveQubitLabels.EVE_ATTACK_CHOICE,
+                    ],
+                )
+                return curr_system
+            case _:
+                return curr_system
+
+    def compute_angle_for_base_choice(self) -> float:
+        """Compute the angle to get the right probability to choose the X
+        basis"""
+        px = 1 / (1 + np.sqrt(self.detection_size / self.bloc_size))
+        return 2 * np.asin(np.sqrt(px))
+
+    def eve_state_pseudo_measurement(self):
+        """Creates a circuit where Eve pseudo-measures the transmitted qubit"""
+
+        # Create circuit where
+        pseudo_measure_qc = QuantumCircuit(3)
+        pseudo_measure_qc.ry(self.compute_angle_for_base_choice(), 2)
+        pseudo_measure_qc.ch(2, 0)
+        pseudo_measure_qc.cx(0, 1)
+        pseudo_measure_qc.ch(2, 0)
+
+        pseudo_measure_ctrl_gate = pseudo_measure_qc.to_gate().control(
+            num_ctrl_qubits=1, ctrl_state="1"
+        )
+
+        qc = QuantumCircuit(4)
+        angle = 2 * np.asin(np.sqrt(self.p))
+        qc.ry(angle, 3)
+        qc.append(pseudo_measure_ctrl_gate, range(4))
+
+        return Kraus(qc)
+
+    def compute_eve_info(self, measurements, labels):
+        alice_base_idx = labels.index(
+            TomamichelEtAlQbitLabels.ALICE_BASE_CHOICE
+        )
+        bob_base_idx = labels.index(TomamichelEtAlQbitLabels.BOB_BASE_CHOICE)
+        eve_base_idx = labels.index(
+            TomamichelEtAlEveQubitLabels.EVE_BASE_CHOICE
+        )
+        eve_attack_idx = labels.index(
+            TomamichelEtAlEveQubitLabels.EVE_ATTACK_CHOICE
+        )
+        eve_copy_idx = labels.index(TomamichelEtAlEveQubitLabels.EVE_COPY)
+
+        bloc = [
+            i
+            for i, m in enumerate(measurements)
+            if m[alice_base_idx] == m[bob_base_idx]
+            and m[alice_base_idx] == "1"
+        ]
+
+        rng = np.random.default_rng(int(self.seed))
+        key_subset = rng.choice(bloc, size=int(self.bloc_size), replace=False)
+
+        return "".join(
+            (
+                m[eve_copy_idx]
+                if m[eve_attack_idx] == "1"
+                and m[eve_base_idx] == m[alice_base_idx]
+                else "x"
+            )
+            for i, m in enumerate(measurements)
+            if i in key_subset
         )
