@@ -2,7 +2,12 @@
 checking and more"""
 
 from .models import DataBase
-from .utils import save_db_in_folder, load_db_from_folder
+from .utils import (
+    save_db_in_folder,
+    load_db_from_folder,
+    check_if_folder_is_correct,
+    setup_folder,
+)
 from .schema import (
     DistProtCols,
     RunCols,
@@ -34,4 +39,6 @@ __all__ = [
     "AmpCols",
     "AmpParamsCols",
     "DataBaseFileNames",
+    "check_if_folder_is_correct",
+    "setup_folder",
 ]

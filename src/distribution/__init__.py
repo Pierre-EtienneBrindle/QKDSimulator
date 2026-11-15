@@ -10,6 +10,7 @@ from .models import (
     BB84KeyDistribution,
     TomamichelEtAlKeyDistribution,
     BB84Eve,
+    TomamichelEtAlEve,
 )
 from .schema import (
     DepolarizingParams,
@@ -20,6 +21,8 @@ from .schema import (
     BB84Params,
     TomamichelEtAlParams,
     TomamichelEtAlQbitLabels,
+    TomamichelEtAlEveParams,
+    TomamichelEtAlEveQubitLabels,
 )
 
 __all__ = [
@@ -40,4 +43,7 @@ __all__ = [
     "BB84Params",
     "TomamichelEtAlParams",
     "TomamichelEtAlQbitLabels",
+    "TomamichelEtAlEveParams",
+    "TomamichelEtAlEveQubitLabels",
+    "TomamichelEtAlEve",
 ]
