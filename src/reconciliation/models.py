@@ -297,4 +297,4 @@ class CascadeProtocol(ReconciliationProtocol):
                 rng,
             )
 
-        return alice_raw_key, "".join(str(bob_array))
+        return alice_raw_key, "".join(str(b) for b in bob_array)
