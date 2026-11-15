@@ -345,7 +345,7 @@ class BB84Eve(Environment):
         qc = QuantumCircuit(4)
         angle = 2 * np.asin(np.sqrt(self.p))
         qc.ry(angle, 3)
-        qc.append(pseudo_measure_ctrl_gate, range(4))
+        qc.append(pseudo_measure_ctrl_gate, [4, 0, 1, 2, 3])
 
         return Kraus(qc)
 
@@ -652,7 +652,7 @@ class TomamichelEtAlEve(Environment):
         qc = QuantumCircuit(4)
         angle = 2 * np.asin(np.sqrt(self.p))
         qc.ry(angle, 3)
-        qc.append(pseudo_measure_ctrl_gate, range(4))
+        qc.append(pseudo_measure_ctrl_gate, [4, 0, 1, 2, 3])
 
         return Kraus(qc)
 
