@@ -18,13 +18,17 @@ def execute_reconciliation_and_store(
     :type reconciliation_protocol: ReconciliationProtocol
     :param run_id: The id of the run that produced the keys
     :type run_id: int
-    :return: The id of the reconciliation attempt
+    :return: The id of the reconciliation attempt or -1 if the reconciliation
+    couldn't be attempted
     :rtype: int"""
 
     run_info = db.run[db.run[RunCols.ID] == run_id]
     alice_raw: str = run_info[RunCols.ALICE_KEY].iloc[0]
     bob_raw: str = run_info[RunCols.BOB_KEY].iloc[0]
     error_rate: float = run_info[RunCols.ERROR_RATE].iloc[0]
+
+    if alice_raw == "" or bob_raw == "":
+        return -1
 
     alice_key, bob_key = reconciliation_protocol.reconciliate_keys(
         alice_raw,

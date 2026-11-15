@@ -88,7 +88,8 @@ class DistributionProtocol(Recordable):
         and Bob's qbits
         :type labels: List[str]
         :return: Alice's raw key, Bob's raw key and the error rate in this
-        order
+        order. If Alice (resp. Bob) aborted, Alice's raw key (resp. Bob) will
+        be the empty string ("").
         :rtype: Tuple[str,str,float]
         """
         raise NotImplementedError("This abstract method wasn't implemented")

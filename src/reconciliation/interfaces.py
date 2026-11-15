@@ -29,7 +29,9 @@ class ReconciliationProtocol(Recordable):
         :type bob_raw_key: str
         :param error_rate: The expected error rate of the protocol
         :type error_rate: float
-        :return: Alice's and Bob's key after error reconciliation
+        :return: Alice's and Bob's key after error reconciliation. If Alice
+        (resp. Bob) aborted, Alice's raw key (resp. Bob) will be the empty
+        string ("").
         :rtype: Tuple[str,str]
         """
         raise NotImplementedError("This abstract method wasn't implemented")
