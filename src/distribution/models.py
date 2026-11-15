@@ -372,13 +372,10 @@ class BB84Eve(Environment):
         ]
 
         return "".join(
-            (
-                m[eve_bit_idx]
-                if m[eve_base_idx] == m[alice_base_idx]
-                and m[eve_attack_idx] == "1"
-                else "x"
-            )
-            for m in kept_measurements
+            str(i) + ":" + str(m[eve_bit_idx]) + ","
+            for i, m in enumerate(kept_measurements)
+            if m[eve_base_idx] == m[alice_base_idx]
+            and m[eve_attack_idx] == "1"
         )
 
 
@@ -681,11 +678,13 @@ class TomamichelEtAlEve(Environment):
 
         return "".join(
             (
-                m[eve_copy_idx]
-                if m[eve_attack_idx] == "1"
-                and m[eve_base_idx] == m[alice_base_idx]
-                else "x"
+                str(np.where(key_subset == i)[0][0])
+                + ":"
+                + str(m[eve_copy_idx])
+                + ","
             )
             for i, m in enumerate(measurements)
             if i in key_subset
+            and m[eve_attack_idx] == "1"
+            and m[eve_base_idx] == m[alice_base_idx]
         )
