@@ -23,7 +23,9 @@ class AmplificationProtocol(Recordable):
         :type alice_raw_key: str
         :param bob_raw_key: Bob's raw key
         :type bob_raw_key: str
-        :return: Alice's and Bob's key after privacy amplification
+        :return: Alice's and Bob's key after privacy amplification. If Alice
+        (resp. Bob) aborted, Alice's raw key (resp. Bob) will be the empty
+        string ("").
         :rtype: Tuple[str,str]
         """
         raise NotImplementedError("This abstract method wasn't implemented")

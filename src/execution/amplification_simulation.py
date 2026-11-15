@@ -24,7 +24,8 @@ def execute_amplification_and_store(
     :param reconciliation_id: The id of the information reconciliation
     attempt that produced the keys
     :type reconciliation_id: int
-    :return: The id of the privacy amplification attempt
+    :return: The id of the privacy amplification attempt or -1 if the
+    amplification couldn't be attempted
     :rtype: int"""
 
     reconciliation = db.reconciliation[
@@ -32,6 +33,9 @@ def execute_amplification_and_store(
     ]
     alice_raw: str = reconciliation[RecCols.ALICE_KEY].iloc[0]
     bob_raw: str = reconciliation[RecCols.BOB_KEY].iloc[0]
+
+    if alice_raw == "" or bob_raw == "":
+        return -1
 
     alice_key, bob_key = amplification_protocol.amplify_keys(
         alice_raw, bob_raw
