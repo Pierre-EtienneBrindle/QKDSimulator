@@ -14,15 +14,24 @@ class CascadeProtocol(ReconciliationProtocol):
 
     seed: int
     number_of_passes: int
+    alpha: float
+    beta: float
+    idx_pass_force_size: int
 
     def __init__(
         self,
         seed: int,
         number_of_passes: int,
+        alpha: float,
+        beta: float,
+        idx_pass_force_size,
     ):
         super().__init__()
         self.seed = seed
         self.number_of_passes = number_of_passes
+        self.alpha = alpha
+        self.beta = beta
+        self.idx_pass_force_size = idx_pass_force_size
 
     @classmethod
     def get_name(cls):
@@ -32,6 +41,9 @@ class CascadeProtocol(ReconciliationProtocol):
         return [
             (CascadeParams.SEED, self.seed),
             (CascadeParams.NUMBER_OF_PASSES, self.number_of_passes),
+            (CascadeParams.ALPHA, self.alpha),
+            (CascadeParams.BETA, self.beta),
+            (CascadeParams.IDX_PASS_FORCE_SIZE, self.idx_pass_force_size),
         ]
 
     @classmethod
@@ -39,6 +51,8 @@ class CascadeProtocol(ReconciliationProtocol):
         return CascadeProtocol(
             int(params[CascadeParams.SEED]),
             int(params[CascadeParams.NUMBER_OF_PASSES]),
+            float(params[CascadeParams.ALPHA]),
+            float(params[CascadeParams.BETA]),
         )
 
     @classmethod
@@ -87,7 +101,7 @@ class CascadeProtocol(ReconciliationProtocol):
 
         left_modif = cls.binary(alice_key, bob_key, subsets, left_indices)
 
-        if left_modif > 0:
+        if left_modif >= 0:
             return left_modif
 
         right_modifs = cls.binary(alice_key, bob_key, subsets, right_indices)
@@ -249,7 +263,7 @@ class CascadeProtocol(ReconciliationProtocol):
 
         for j in range(min_val, max_val + 1):
             curr_subset = np.where(attributions == j)[0]
-            curr_subset = tuple(curr_subset)
+            curr_subset = tuple(rng.permutation(curr_subset))
             all_subsets[curr_pass].add(curr_subset)
 
             modif_idx = cls.binary(
@@ -269,15 +283,19 @@ class CascadeProtocol(ReconciliationProtocol):
                 )
 
     def reconciliate_keys(self, alice_raw_key, bob_raw_key, error_rate):
-        subset_size = ceil(
-            0.8 / (error_rate + 0.0001)
-        )  # Adds a small buffer to avoid division by 0
-
         alice_array = [int(a) for a in alice_raw_key]
         bob_array = [int(b) for b in bob_raw_key]
 
         rng = np.random.default_rng(seed=self.seed)
         all_subsets: Dict[int, Set[Tuple[int]]] = {}
+
+        max_subset_size = ceil(len(alice_array) / 2)
+
+        subset_size = min(
+            # Adds a small buffer to avoid division by 0
+            ceil(self.alpha / (error_rate + 0.0001)),
+            max_subset_size,
+        )
 
         self.do_cascade_first_pass(
             alice_array,
@@ -287,7 +305,11 @@ class CascadeProtocol(ReconciliationProtocol):
         )
 
         for i in range(2, self.number_of_passes + 1):
-            subset_size = min(5 * subset_size, ceil(len(alice_array) / 2))
+            if i < self.idx_pass_force_size:
+                subset_size = min(self.beta * subset_size, max_subset_size)
+            else:
+                subset_size = max_subset_size
+
             self.do_cascade_ith_pass(
                 alice_array,
                 bob_array,

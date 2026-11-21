@@ -8,3 +8,6 @@ class CascadeParams(StrEnum):
 
     SEED = auto()
     NUMBER_OF_PASSES = auto()
+    ALPHA = auto()
+    BETA = auto()
+    IDX_PASS_FORCE_SIZE = auto()
