@@ -307,7 +307,9 @@ class CascadeProtocol(ReconciliationProtocol):
 
         for i in range(2, self.number_of_passes + 1):
             if i < self.idx_pass_force_size:
-                subset_size = min(self.beta * subset_size, max_subset_size)
+                subset_size = min(
+                    ceil(self.beta * subset_size), max_subset_size
+                )
             else:
                 subset_size = max_subset_size
 

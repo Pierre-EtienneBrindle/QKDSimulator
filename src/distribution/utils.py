@@ -18,4 +18,4 @@ def binary_entropy(prob: float) -> float:
         return 0
     if prob >= 0.5:
         return 1
-    return np.log2(prob) * prob + (1 - prob) * np.log2(1 - prob)
+    return -(np.log2(prob) * prob + (1 - prob) * np.log2(1 - prob))

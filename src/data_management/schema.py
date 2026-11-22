@@ -62,6 +62,7 @@ class RecCols(StrEnum):
     RUN_ID = auto()
     ALICE_KEY = auto()
     BOB_KEY = auto()
+    NB_REVEALED = auto()
 
 
 class RecParamsCols(StrEnum):
