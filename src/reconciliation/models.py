@@ -2,11 +2,67 @@
 
 from typing import Tuple, Set, List, Dict
 from math import ceil
+import copy
 
 import numpy as np
+import galois
 
 from src.reconciliation.interfaces import ReconciliationProtocol
 from src.reconciliation.schema import CascadeParams
+
+
+def find_nb_bits_revealed(
+    revealed: list[tuple[int, ...]],
+    key_length: int,
+) -> int:
+    """Computes the number of bits revealed from the shared parities
+
+    :param revealed: The list of all parities shared
+    :type revealed: list[tuple[int,...]]
+    :param key_length: The length of the key that was corrected
+    :type key_length: int
+    :return: The number of bits revealed. Will always be <= min(len
+        (revealed), key_length)
+    :rtype: int
+    """
+
+    if len(revealed) == 0:
+        return 0
+
+    # FUTURE OPTIMISATION : The removal could be done faster using stuff
+    # already compiled in C
+
+    known = set()
+    updated = True
+    while updated:
+        updated = False
+        length = len(revealed)
+        i = 0
+        while i < length:
+            if len(revealed[i]) == 1:
+                known.add(int(revealed[i][0]))
+                updated = True
+                revealed.pop(i)
+                length -= 1
+            else:
+                new = []
+                for x in revealed[i]:
+                    x = int(x)
+                    if x not in known:
+                        new.append(x)
+                revealed[i] = np.array(new, dtype=int)
+                i += 1
+
+    matrix = np.zeros(shape=(len(revealed), key_length), dtype=np.int8)
+
+    rows = np.repeat(np.arange(len(revealed)), [len(t) for t in revealed])
+    cols = np.concatenate(revealed, dtype=int)
+
+    matrix[rows, cols] = 1
+
+    gf = galois.GF(2)
+
+    return np.linalg.matrix_rank(gf(matrix)) + len(known)
 
 
 class CascadeProtocol(ReconciliationProtocol):
@@ -216,10 +272,6 @@ class CascadeProtocol(ReconciliationProtocol):
                 all_subsets[smallest[0]],
                 smallest[1],
             )
-            # This should not happen in theory
-            if new_modif_idx == -1:
-                print("Error in CascadeProtocol's logic -- No side effect")
-                continue
 
             # Using symmetric difference, keeps only the subsets that were
             # only affected once
@@ -284,9 +336,15 @@ class CascadeProtocol(ReconciliationProtocol):
                     modif_idx,
                 )
 
-    def reconciliate_keys(self, alice_raw_key, bob_raw_key, error_rate):
+    def reconciliate_keys(
+        self,
+        alice_raw_key,
+        bob_raw_key,
+        error_rate,
+        correctness,
+    ):
         if error_rate == 0:
-            return alice_raw_key, bob_raw_key, []
+            return alice_raw_key, bob_raw_key, 0, []
 
         alice_array = [int(a) for a in alice_raw_key]
         bob_array = [int(b) for b in bob_raw_key]
@@ -327,4 +385,13 @@ class CascadeProtocol(ReconciliationProtocol):
             for subset in list_of_subsets:
                 revealed.append(subset)
 
-        return alice_raw_key, "".join(str(b) for b in bob_array), revealed
+        # TODO : Add 2-universal hash function check
+
+        return (
+            alice_raw_key,
+            "".join(str(b) for b in bob_array),
+            find_nb_bits_revealed(
+                copy.deepcopy(revealed), len(alice_raw_key)
+            ),
+            revealed,
+        )

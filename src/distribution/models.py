@@ -362,7 +362,6 @@ class BB84Eve(Environment):
         bob_base_idx = labels.index(BB84QbitLabels.BOB_BASE_CHOICE)
         eve_base_idx = labels.index(BB84EveQubitLabels.EVE_BASE_CHOICE)
         eve_attack_idx = labels.index(BB84EveQubitLabels.EVE_ATTACK_CHOICE)
-        eve_bit_idx = labels.index(BB84EveQubitLabels.EVE_COPY)
 
         kept_measurements = [
             m for m in measurements if m[alice_base_idx] == m[bob_base_idx]
@@ -380,7 +379,7 @@ class BB84Eve(Environment):
         ]
 
         return "".join(
-            str(i) + ":" + str(m[eve_bit_idx]) + ","
+            str(i) + ","
             for i, m in enumerate(kept_measurements)
             if m[eve_base_idx] == m[alice_base_idx]
             and m[eve_attack_idx] == "1"

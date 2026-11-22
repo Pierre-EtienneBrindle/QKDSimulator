@@ -10,11 +10,12 @@ class AmplificationProtocol(Recordable):
     """Abstract class/interface for all privacy amplification
     protocols"""
 
-    # TO THINK ABOUT : GET ERROR RATE AND AMOUNT OF BIT REVEALED ? - Could be
-    # though params when constructing the object
     @abstractmethod
     def amplify_keys(
-        self, alice_raw_key: str, bob_raw_key: str
+        self,
+        alice_raw_key: str,
+        bob_raw_key: str,
+        max_key_length: int,
     ) -> Tuple[str, str]:
         """
         Tries to minimise the shared information of an eavesdropper and Alice's key
@@ -23,6 +24,9 @@ class AmplificationProtocol(Recordable):
         :type alice_raw_key: str
         :param bob_raw_key: Bob's raw key
         :type bob_raw_key: str
+        :param max_key_length: The maximal secure key length that the
+            protocol can produce
+        :type max_key_length: int
         :return: Alice's and Bob's key after privacy amplification. If Alice
             (resp. Bob) aborted, Alice's raw key (resp. Bob) will be the empty
             string ("").

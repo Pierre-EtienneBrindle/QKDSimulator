@@ -2,10 +2,7 @@
 amplification protocol"""
 
 from src.amplification import AmplificationProtocol
-from src.data_management import (
-    DataBase,
-    RecCols,
-)
+from src.data_management import DataBase, RecCols, RunCols
 from src.execution.utils import base_2_to_base_16, base_16_to_base_2
 
 
@@ -37,6 +34,12 @@ def execute_amplification_and_store(
 
     if alice_raw == "" or bob_raw == "":
         return -1
+
+    run_id = reconciliation[RecCols.RUN_ID].iloc[0]
+
+    run = db.run[db.run[RunCols.ID] == run_id]
+
+    dist_prot_name = run[RunCols.PROTOCOL_NAME].iloc[0]
 
     alice_key, bob_key = amplification_protocol.amplify_keys(
         base_16_to_base_2(alice_raw),
