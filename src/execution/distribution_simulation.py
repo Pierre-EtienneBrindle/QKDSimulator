@@ -47,7 +47,7 @@ def execute_run_and_store(
     :param db: The database to store the results inside of
     :type db: DataBase
     :param num_iterations: The number of iteration of the protocol to
-    compute
+        compute
     :return: The run_id of this execution to be able to get back the
     results
     :rtype: int"""

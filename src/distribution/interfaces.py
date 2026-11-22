@@ -55,21 +55,36 @@ class Environment(Recordable):
         eave's dropper, it can also read any classical communication qbit
 
         :param segment_number: The segment of the protocol after witch the
-        environment is placed (used for Eve's)
+            environment is placed (used for Eve's)
         :type segment_number: int
         :param curr_system: The system to apply the environment to
         :type curr_system: System
         :param transmitted_qbits: The labels of the qbits that are
-        transmitted over the quantum communication channel
+            transmitted over the quantum communication channel
         :type transmitted_qbits: List[str]
         :return: The system after the environment was applied. This system
-        might have greater dimensions than the original one.
+            might have greater dimensions than the original one.
         :rtype: System"""
         raise NotImplementedError("This abstract method wasn't implemented")
 
 
 class DistributionProtocol(Recordable):
     """Abstract class/interface of all QKD protocol"""
+
+    security: float
+    correctness: float
+    max_error_rate: float
+
+    def __init__(
+        self,
+        security: float,
+        correctness: float,
+        max_error_rate: float,
+    ):
+        super().__init__()
+        self.security = security
+        self.correctness = correctness
+        self.max_error_rate = max_error_rate
 
     @abstractmethod
     def compute_raw_keys(
@@ -82,14 +97,13 @@ class DistributionProtocol(Recordable):
         each measurement.
 
         :param measurements: The list of all the results of the measurements
-        of the system
+            of the system
         :type measurements: List[str]
         :param labels: The name of each qbit to be able to identify Alice's
-        and Bob's qbits
+            and Bob's qbits
         :type labels: List[str]
         :return: Alice's raw key, Bob's raw key and the error rate in this
-        order. If Alice (resp. Bob) aborted, Alice's raw key (resp. Bob) will
-        be the empty string ("").
+            order.
         :rtype: Tuple[str,str,float]
         """
         raise NotImplementedError("This abstract method wasn't implemented")
@@ -110,8 +124,8 @@ class DistributionProtocol(Recordable):
         :param curr_system: The system before the application of the protocol
         :type curr_system: System
         :return: The new system after doing the segment of the protocol and
-        the labels of the qbits that will be transmitted over the quantum
-        channel at the end of the segment
+            the labels of the qbits that will be transmitted over the quantum
+            channel at the end of the segment
         :rtype: Tuple[System, List[str]]
         """
         raise NotImplementedError("This abstract method wasn't implemented")
@@ -139,4 +153,25 @@ class DistributionProtocol(Recordable):
         :type labels: List[str]
         :return: True iff the protocol is done
         :rtype: bool"""
+        raise NotImplementedError("This abstract method wasn't implemented")
+
+    @abstractmethod
+    def get_max_key_length(
+        self,
+        error_rate: float,
+        nb_bits_revealed: int,
+    ) -> int:
+        """
+        Gets the maximal secured key length.
+
+        :param error_rate: The error rate found after the distribution. This
+            should include the statistical fluctuation if there are
+            considered.
+        :type error_rate: float
+        :param nb_bits_revealed: The number of bits revealed while doing
+            information reconciliation.
+        :type nb_bits_revealed: int
+        :return: The maximal secured key length to be outputted.
+        """
+
         raise NotImplementedError("This abstract method wasn't implemented")

@@ -20,7 +20,7 @@ def execute_reconciliation_and_store(
     :param run_id: The id of the run that produced the keys
     :type run_id: int
     :return: The id of the reconciliation attempt or -1 if the reconciliation
-    couldn't be attempted
+        couldn't be attempted
     :rtype: int"""
 
     run_info = db.run[db.run[RunCols.ID] == run_id]
@@ -31,7 +31,7 @@ def execute_reconciliation_and_store(
     if alice_raw == "" or bob_raw == "":
         return -1
 
-    alice_key, bob_key = reconciliation_protocol.reconciliate_keys(
+    alice_key, bob_key, revealed = reconciliation_protocol.reconciliate_keys(
         base_16_to_base_2(alice_raw),
         base_16_to_base_2(bob_raw),
         error_rate,

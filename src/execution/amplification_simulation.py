@@ -18,15 +18,15 @@ def execute_amplification_and_store(
     execution inside the data base.
 
     :param db: The database to save the result of the information
-    amplification attempt into
+        amplification attempt into
     :type db: DataBase
     :param amplification_protocol: The protocol to execute
     :type amplification_protocol: AmplificationProtocol
     :param reconciliation_id: The id of the information reconciliation
-    attempt that produced the keys
+        attempt that produced the keys
     :type reconciliation_id: int
     :return: The id of the privacy amplification attempt or -1 if the
-    amplification couldn't be attempted
+        amplification couldn't be attempted
     :rtype: int"""
 
     reconciliation = db.reconciliation[

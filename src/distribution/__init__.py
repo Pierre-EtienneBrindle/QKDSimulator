@@ -13,6 +13,7 @@ from .models import (
     TomamichelEtAlEve,
 )
 from .schema import (
+    GenDistParams,
     DepolarizingParams,
     AmplitudeDampingParams,
     BB84EveParams,
@@ -24,6 +25,7 @@ from .schema import (
     TomamichelEtAlEveParams,
     TomamichelEtAlEveQubitLabels,
 )
+from .utils import binary_entropy
 
 __all__ = [
     "DistributionProtocol",
@@ -46,4 +48,6 @@ __all__ = [
     "TomamichelEtAlEveParams",
     "TomamichelEtAlEveQubitLabels",
     "TomamichelEtAlEve",
+    "binary_entropy",
+    "GenDistParams",
 ]

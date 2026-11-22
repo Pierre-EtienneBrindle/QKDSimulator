@@ -3,6 +3,14 @@
 from enum import StrEnum, auto
 
 
+class GenDistParams(StrEnum):
+    """Names of the parameters that are shared by every QKD protocols"""
+
+    SECURITY = auto()
+    CORRECTNESS = auto()
+    MAX_ERROR_RATE = auto()
+
+
 class DepolarizingParams(StrEnum):
     """Names of the parameters of the single qbit depolarizing channel"""
 
@@ -19,7 +27,6 @@ class AmplitudeDampingParams(StrEnum):
 class BB84Params(StrEnum):
     """Names of the parameters of the BB84 key distribution protocol"""
 
-    MAX_ERROR_RATE = auto()
     TARGET_KEY_SIZE = auto()
     RANDOM_SEED = auto()
 
@@ -51,7 +58,6 @@ class BB84EveQubitLabels(StrEnum):
 class TomamichelEtAlParams(StrEnum):
     """Names of the parameters of the Tomamichel et al. QKD protocol"""
 
-    MAX_ERROR_RATE = auto()
     BLOC_SIZE = auto()
     DETECTION_SIZE = auto()
     RANDOM_SEED = auto()

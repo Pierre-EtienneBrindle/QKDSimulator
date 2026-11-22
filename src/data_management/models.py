@@ -256,7 +256,7 @@ class DataBase:
         """Loads the environments inside the 'environment' DataFrame
 
         :param distribution_protocols: The environments to add to the
-        DataFrame
+            DataFrame
         :type distribution_protocols: List[type[Environment]]
         """
         temp = pd.DataFrame(
@@ -278,8 +278,8 @@ class DataBase:
     def load_environment_params(
         self, run_id: int, params: List[Tuple[str, Any]]
     ) -> None:
-        """Adds the environment parameters to the
-        'environment_params' dataframe.
+        """Adds the environment parameters to the 'environment_params'
+        dataframe.
 
         :param environment_id: The id of the run
         :type environment_id: int
@@ -490,7 +490,7 @@ class DataBase:
         :param amplification_id : The privacy amplification attempt's id
         :type amplification_id: int
         :param params: The parameters of the privacy amplification protocol
-        used
+            used
         :type params: List[str,Any]"""
 
         temp = pd.DataFrame(

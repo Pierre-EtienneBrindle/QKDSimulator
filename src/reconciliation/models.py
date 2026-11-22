@@ -53,6 +53,7 @@ class CascadeProtocol(ReconciliationProtocol):
             int(params[CascadeParams.NUMBER_OF_PASSES]),
             float(params[CascadeParams.ALPHA]),
             float(params[CascadeParams.BETA]),
+            int(params[CascadeParams.IDX_PASS_FORCE_SIZE]),
         )
 
     @classmethod
@@ -68,12 +69,12 @@ class CascadeProtocol(ReconciliationProtocol):
         be directly modified with high likely hood.
 
         :param alice_key: Alice's key before doing binary -- will be "read
-        only"
+            only"
         :type alice_key: List[int]
         :param bob_key: Bob's key before doing binary -- can be modified
         :type bob_key: List[int]
         :param subsets: The subsets created while doing a certain pass of the
-        Cascade protocol
+            Cascade protocol
         :type subsets: Set[Tuple[int]]
         :param indices: The indices of the current subset
         :type indices: Tuple[int]
@@ -248,7 +249,8 @@ class CascadeProtocol(ReconciliationProtocol):
         :type all_subsets: Dict[int,Set[Tuple[int]]]
         :param curr_pass: The pass that needs to be executed
         :type curr_pass: int
-        :param subset_size: The size of the subsets created in the current pass
+        :param subset_size: The size of the subsets created in the current
+            pass
         :param rng: The random number generator that needs to be used
         :type rng: np.random.Generator
         """
@@ -283,6 +285,9 @@ class CascadeProtocol(ReconciliationProtocol):
                 )
 
     def reconciliate_keys(self, alice_raw_key, bob_raw_key, error_rate):
+        if error_rate == 0:
+            return alice_raw_key, bob_raw_key, []
+
         alice_array = [int(a) for a in alice_raw_key]
         bob_array = [int(b) for b in bob_raw_key]
 
@@ -291,11 +296,7 @@ class CascadeProtocol(ReconciliationProtocol):
 
         max_subset_size = ceil(len(alice_array) / 2)
 
-        subset_size = min(
-            # Adds a small buffer to avoid division by 0
-            ceil(self.alpha / (error_rate + 0.0001)),
-            max_subset_size,
-        )
+        subset_size = min(ceil(self.alpha / error_rate), max_subset_size)
 
         self.do_cascade_first_pass(
             alice_array,
@@ -319,4 +320,9 @@ class CascadeProtocol(ReconciliationProtocol):
                 rng,
             )
 
-        return alice_raw_key, "".join(str(b) for b in bob_array)
+        revealed = []
+        for list_of_subsets in all_subsets.values():
+            for subset in list_of_subsets:
+                revealed.append(subset)
+
+        return alice_raw_key, "".join(str(b) for b in bob_array), revealed
