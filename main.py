@@ -26,6 +26,7 @@ from src.data_management import (
     save_db_in_folder,
     load_db_from_folder,
     DataBase,
+    RunCols,
 )
 
 
@@ -312,17 +313,34 @@ def main():
     db = get_db(folder_path)
     rng = np.random.default_rng()
 
-    simulate_BB84_no_noise(rng, db, folder_path)
-    simulate_Tomamichel_no_noise(rng, db, folder_path)
+    # simulate_BB84_no_noise(rng, db, folder_path)
+    # simulate_Tomamichel_no_noise(rng, db, folder_path)
 
-    simulate_BB84_with_Eve(rng, db, folder_path)
-    simulate_Tomamichel_with_Eve(rng, db, folder_path)
+    # simulate_BB84_with_Eve(rng, db, folder_path)
+    # simulate_Tomamichel_with_Eve(rng, db, folder_path)
 
-    simulate_BB84_with_amplitude_damping(rng, db, folder_path)
-    simulate_Tomamichel_with_amplitude_damping(rng, db, folder_path)
+    # simulate_BB84_with_amplitude_damping(rng, db, folder_path)
+    # simulate_Tomamichel_with_amplitude_damping(rng, db, folder_path)
 
-    simulate_BB84_with_depolarization(rng, db, folder_path)
-    simulate_Tomamichel_with_depolarization(rng, db, folder_path)
+    # simulate_BB84_with_depolarization(rng, db, folder_path)
+    # simulate_Tomamichel_with_depolarization(rng, db, folder_path)
+
+    BATCH_SIZE = 100
+    delta = 0
+
+    for run_id in db.run[RunCols.ID]:
+        execute_reconciliation_and_store(
+            db,
+            CascadeProtocol(rng.integers(0, 2**32 - 1, 1)[0], 10, 0.8, 5, 3),
+            run_id,
+        )
+
+        delta += 1
+        if delta >= BATCH_SIZE:
+            save_db_in_folder(db, folder_path)
+            delta = 0
+
+    save_db_in_folder(db, folder_path)
 
 
 if __name__ == "__main__":
