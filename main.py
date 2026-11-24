@@ -27,6 +27,7 @@ from src.data_management import (
     load_db_from_folder,
     DataBase,
     RunCols,
+    RecCols,
 )
 
 
@@ -306,6 +307,29 @@ def simulate_Tomamichel_with_depolarization(
             save_db_in_folder(db, folder_path)
 
 
+def reconciliate_keys(
+    db: DataBase,
+    folder_path: Path,
+    ids: list[int],
+    rng: np.random.Generator,
+) -> None:
+    BATCH_SIZE = 100
+    delta = 0
+
+    for run_id in ids:
+        execute_reconciliation_and_store(
+            db,
+            CascadeProtocol(rng.integers(0, 2**32 - 1, 1)[0], 10, 0.8, 5, 3),
+            run_id,
+        )
+        delta += 1
+        if delta >= BATCH_SIZE:
+            save_db_in_folder(db, folder_path)
+            delta = 0
+
+    save_db_in_folder(db, folder_path)
+
+
 def main():
     """Main function"""
     folder_path = Path.cwd() / "results"
@@ -325,22 +349,11 @@ def main():
     # simulate_BB84_with_depolarization(rng, db, folder_path)
     # simulate_Tomamichel_with_depolarization(rng, db, folder_path)
 
-    BATCH_SIZE = 100
-    delta = 0
+    not_reconciled = db.run[
+        ~db.run[RunCols.ID].isin(db.reconciliation[RecCols.RUN_ID])
+    ]
 
-    for run_id in db.run[RunCols.ID]:
-        execute_reconciliation_and_store(
-            db,
-            CascadeProtocol(rng.integers(0, 2**32 - 1, 1)[0], 10, 0.8, 5, 3),
-            run_id,
-        )
-
-        delta += 1
-        if delta >= BATCH_SIZE:
-            save_db_in_folder(db, folder_path)
-            delta = 0
-
-    save_db_in_folder(db, folder_path)
+    reconciliate_keys(db, folder_path, not_reconciled[RunCols.ID].to_list())
 
 
 if __name__ == "__main__":
