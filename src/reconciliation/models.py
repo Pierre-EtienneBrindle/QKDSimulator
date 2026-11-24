@@ -2,11 +2,70 @@
 
 from typing import Tuple, Set, List, Dict
 from math import ceil
+import copy
 
 import numpy as np
+import galois
 
 from src.reconciliation.interfaces import ReconciliationProtocol
 from src.reconciliation.schema import CascadeParams
+
+
+# Needs a proof that this is directly correlated with the amount of
+# information ANY Eve could get, not just the few implementation proposed in
+# this project.
+def find_nb_bits_revealed(
+    revealed: list[tuple[int, ...]],
+    key_length: int,
+) -> int:
+    """Computes the number of bits revealed from the shared parities
+
+    :param revealed: The list of all parities shared
+    :type revealed: list[tuple[int,...]]
+    :param key_length: The length of the key that was corrected
+    :type key_length: int
+    :return: The number of bits revealed. Will always be <= min(len
+        (revealed), key_length)
+    :rtype: int
+    """
+
+    if len(revealed) == 0:
+        return 0
+
+    # FUTURE OPTIMISATION : The removal could be done faster using stuff
+    # already compiled in C
+
+    known = set()
+    updated = True
+    while updated:
+        updated = False
+        length = len(revealed)
+        i = 0
+        while i < length:
+            if len(revealed[i]) == 1:
+                known.add(int(revealed[i][0]))
+                updated = True
+                revealed.pop(i)
+                length -= 1
+            else:
+                new = []
+                for x in revealed[i]:
+                    x = int(x)
+                    if x not in known:
+                        new.append(x)
+                revealed[i] = np.array(new, dtype=int)
+                i += 1
+
+    matrix = np.zeros(shape=(len(revealed), key_length), dtype=np.int8)
+
+    rows = np.repeat(np.arange(len(revealed)), [len(t) for t in revealed])
+    cols = np.concatenate(revealed, dtype=int)
+
+    matrix[rows, cols] = 1
+
+    gf = galois.GF(2)
+
+    return np.linalg.matrix_rank(gf(matrix)) + len(known)
 
 
 class CascadeProtocol(ReconciliationProtocol):
@@ -14,15 +73,24 @@ class CascadeProtocol(ReconciliationProtocol):
 
     seed: int
     number_of_passes: int
+    alpha: float
+    beta: float
+    idx_pass_force_size: int
 
     def __init__(
         self,
         seed: int,
         number_of_passes: int,
+        alpha: float,
+        beta: float,
+        idx_pass_force_size,
     ):
         super().__init__()
         self.seed = seed
         self.number_of_passes = number_of_passes
+        self.alpha = alpha
+        self.beta = beta
+        self.idx_pass_force_size = idx_pass_force_size
 
     @classmethod
     def get_name(cls):
@@ -32,6 +100,9 @@ class CascadeProtocol(ReconciliationProtocol):
         return [
             (CascadeParams.SEED, self.seed),
             (CascadeParams.NUMBER_OF_PASSES, self.number_of_passes),
+            (CascadeParams.ALPHA, self.alpha),
+            (CascadeParams.BETA, self.beta),
+            (CascadeParams.IDX_PASS_FORCE_SIZE, self.idx_pass_force_size),
         ]
 
     @classmethod
@@ -39,6 +110,9 @@ class CascadeProtocol(ReconciliationProtocol):
         return CascadeProtocol(
             int(params[CascadeParams.SEED]),
             int(params[CascadeParams.NUMBER_OF_PASSES]),
+            float(params[CascadeParams.ALPHA]),
+            float(params[CascadeParams.BETA]),
+            int(params[CascadeParams.IDX_PASS_FORCE_SIZE]),
         )
 
     @classmethod
@@ -54,12 +128,12 @@ class CascadeProtocol(ReconciliationProtocol):
         be directly modified with high likely hood.
 
         :param alice_key: Alice's key before doing binary -- will be "read
-        only"
+            only"
         :type alice_key: List[int]
         :param bob_key: Bob's key before doing binary -- can be modified
         :type bob_key: List[int]
         :param subsets: The subsets created while doing a certain pass of the
-        Cascade protocol
+            Cascade protocol
         :type subsets: Set[Tuple[int]]
         :param indices: The indices of the current subset
         :type indices: Tuple[int]
@@ -87,7 +161,7 @@ class CascadeProtocol(ReconciliationProtocol):
 
         left_modif = cls.binary(alice_key, bob_key, subsets, left_indices)
 
-        if left_modif > 0:
+        if left_modif >= 0:
             return left_modif
 
         right_modifs = cls.binary(alice_key, bob_key, subsets, right_indices)
@@ -201,10 +275,6 @@ class CascadeProtocol(ReconciliationProtocol):
                 all_subsets[smallest[0]],
                 smallest[1],
             )
-            # This should not happen in theory
-            if new_modif_idx == -1:
-                print("Error in CascadeProtocol's logic -- No side effect")
-                continue
 
             # Using symmetric difference, keeps only the subsets that were
             # only affected once
@@ -234,7 +304,8 @@ class CascadeProtocol(ReconciliationProtocol):
         :type all_subsets: Dict[int,Set[Tuple[int]]]
         :param curr_pass: The pass that needs to be executed
         :type curr_pass: int
-        :param subset_size: The size of the subsets created in the current pass
+        :param subset_size: The size of the subsets created in the current
+            pass
         :param rng: The random number generator that needs to be used
         :type rng: np.random.Generator
         """
@@ -249,7 +320,7 @@ class CascadeProtocol(ReconciliationProtocol):
 
         for j in range(min_val, max_val + 1):
             curr_subset = np.where(attributions == j)[0]
-            curr_subset = tuple(curr_subset)
+            curr_subset = tuple(rng.permutation(curr_subset))
             all_subsets[curr_pass].add(curr_subset)
 
             modif_idx = cls.binary(
@@ -268,16 +339,26 @@ class CascadeProtocol(ReconciliationProtocol):
                     modif_idx,
                 )
 
-    def reconciliate_keys(self, alice_raw_key, bob_raw_key, error_rate):
-        subset_size = ceil(
-            0.8 / (error_rate + 0.0001)
-        )  # Adds a small buffer to avoid division by 0
+    # TODO - optimise
+    def reconciliate_keys(
+        self,
+        alice_raw_key,
+        bob_raw_key,
+        error_rate,
+        correctness,
+    ):
+        if error_rate == 0:
+            return alice_raw_key, bob_raw_key, 0, []
 
         alice_array = [int(a) for a in alice_raw_key]
         bob_array = [int(b) for b in bob_raw_key]
 
         rng = np.random.default_rng(seed=self.seed)
         all_subsets: Dict[int, Set[Tuple[int]]] = {}
+
+        max_subset_size = ceil(len(alice_array) / 2)
+
+        subset_size = min(ceil(self.alpha / error_rate), max_subset_size)
 
         self.do_cascade_first_pass(
             alice_array,
@@ -287,7 +368,13 @@ class CascadeProtocol(ReconciliationProtocol):
         )
 
         for i in range(2, self.number_of_passes + 1):
-            subset_size = min(5 * subset_size, ceil(len(alice_array) / 2))
+            if i < self.idx_pass_force_size:
+                subset_size = min(
+                    ceil(self.beta * subset_size), max_subset_size
+                )
+            else:
+                subset_size = max_subset_size
+
             self.do_cascade_ith_pass(
                 alice_array,
                 bob_array,
@@ -297,4 +384,19 @@ class CascadeProtocol(ReconciliationProtocol):
                 rng,
             )
 
-        return alice_raw_key, "".join(str(b) for b in bob_array)
+        revealed = []
+        for list_of_subsets in all_subsets.values():
+            for subset in list_of_subsets:
+                revealed.append(subset)
+
+        # TODO : Add 2-universal hash function check
+
+        return (
+            alice_raw_key,
+            "".join(str(b) for b in bob_array),
+            # find_nb_bits_revealed(
+            # copy.deepcopy(revealed), len(alice_raw_key)
+            # )
+            len(revealed),
+            revealed,
+        )

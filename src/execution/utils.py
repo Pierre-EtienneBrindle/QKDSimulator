@@ -1,8 +1,8 @@
 """Utility function to make read/write smaller in db"""
 
 
-def base_2_to_base_16(s: str) -> str:
-    """Converts a number written in base 2 to a number written in base 16
+def compress_string(s: str) -> str:
+    """Converts a number written in base 2 to a number written in base 16. Adds a 1 at the beginning to avoid loosing leading zeros
 
     :param s: The number to convert
     :type s: str
@@ -10,11 +10,13 @@ def base_2_to_base_16(s: str) -> str:
     :rtype: string"""
     if s == "":
         return s
+    s = "1" + s
     return format(int(s, 2), "x")
 
 
-def base_16_to_base_2(s: str) -> str:
-    """Converts a number written in base 16 to a number written in base 2
+def decompress_string(s: str) -> str:
+    """Converts a number written in base 16 to a number written in base 2.
+    Removes the 1 at the start that was
 
     :param s: The number to convert
     :type s: str
@@ -22,4 +24,9 @@ def base_16_to_base_2(s: str) -> str:
     :rtype: string"""
     if s == "":
         return s
-    return format(int(s, 16), "b")
+    s = format(int(s, 16), "b")
+    if s[0] != "1":
+        raise ValueError(
+            "String given as input wasn't compress using compress_string"
+        )
+    return s[1 : len(s)]

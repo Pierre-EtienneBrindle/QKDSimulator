@@ -11,7 +11,7 @@ class System:
 
     Attributes :\n
     state (DensityMatrix) : The actual state represented as a density
-                            matrix\n
+        matrix\n
     labels (List[str]) : The name of each qbit for identifying purposes
     """
 

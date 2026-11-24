@@ -2,11 +2,8 @@
 amplification protocol"""
 
 from src.amplification import AmplificationProtocol
-from src.data_management import (
-    DataBase,
-    RecCols,
-)
-from src.execution.utils import base_2_to_base_16, base_16_to_base_2
+from src.data_management import DataBase, RecCols, RunCols
+from src.execution.utils import compress_string, decompress_string
 
 
 def execute_amplification_and_store(
@@ -18,15 +15,15 @@ def execute_amplification_and_store(
     execution inside the data base.
 
     :param db: The database to save the result of the information
-    amplification attempt into
+        amplification attempt into
     :type db: DataBase
     :param amplification_protocol: The protocol to execute
     :type amplification_protocol: AmplificationProtocol
     :param reconciliation_id: The id of the information reconciliation
-    attempt that produced the keys
+        attempt that produced the keys
     :type reconciliation_id: int
     :return: The id of the privacy amplification attempt or -1 if the
-    amplification couldn't be attempted
+        amplification couldn't be attempted
     :rtype: int"""
 
     reconciliation = db.reconciliation[
@@ -38,16 +35,22 @@ def execute_amplification_and_store(
     if alice_raw == "" or bob_raw == "":
         return -1
 
+    run_id = reconciliation[RecCols.RUN_ID].iloc[0]
+
+    run = db.run[db.run[RunCols.ID] == run_id]
+
+    dist_prot_name = run[RunCols.PROTOCOL_NAME].iloc[0]
+
     alice_key, bob_key = amplification_protocol.amplify_keys(
-        base_16_to_base_2(alice_raw),
-        base_16_to_base_2(bob_raw),
+        decompress_string(alice_raw),
+        decompress_string(bob_raw),
     )
 
     amplification_id = db.load_amplification(
         amplification_protocol.get_name(),
         reconciliation_id,
-        base_2_to_base_16(alice_key),
-        base_2_to_base_16(bob_key),
+        compress_string(alice_key),
+        compress_string(bob_key),
     )
 
     db.load_amplification_params(

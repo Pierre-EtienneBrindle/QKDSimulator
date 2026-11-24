@@ -1,9 +1,10 @@
 """Module that gives access to function to simulate a given information
 reconciliation protocol"""
 
+from src.distribution.schema import GenDistParams
 from src.reconciliation import ReconciliationProtocol
-from src.data_management import DataBase, RunCols
-from src.execution.utils import base_2_to_base_16, base_16_to_base_2
+from src.data_management import DataBase, RunCols, DistParamsCols
+from src.execution.utils import compress_string, decompress_string
 
 
 def execute_reconciliation_and_store(
@@ -20,28 +21,37 @@ def execute_reconciliation_and_store(
     :param run_id: The id of the run that produced the keys
     :type run_id: int
     :return: The id of the reconciliation attempt or -1 if the reconciliation
-    couldn't be attempted
+        couldn't be attempted
     :rtype: int"""
 
     run_info = db.run[db.run[RunCols.ID] == run_id]
     alice_raw: str = run_info[RunCols.ALICE_KEY].iloc[0]
     bob_raw: str = run_info[RunCols.BOB_KEY].iloc[0]
     error_rate: float = run_info[RunCols.ERROR_RATE].iloc[0]
+    correctness: float = db.distribution_params[
+        db.distribution_params[DistParamsCols.RUN_ID]
+        == run_id & db.distribution_params[DistParamsCols.NAME]
+        == GenDistParams.CORRECTNESS
+    ][DistParamsCols.VALUE].iloc[0]
 
     if alice_raw == "" or bob_raw == "":
         return -1
 
-    alice_key, bob_key = reconciliation_protocol.reconciliate_keys(
-        base_16_to_base_2(alice_raw),
-        base_16_to_base_2(bob_raw),
-        error_rate,
+    alice_key, bob_key, nb_revealed, _ = (
+        reconciliation_protocol.reconciliate_keys(
+            decompress_string(alice_raw),
+            decompress_string(bob_raw),
+            error_rate,
+            correctness,
+        )
     )
 
     reconciliation_id = db.load_reconciliation(
         reconciliation_protocol.get_name(),
         run_id,
-        base_2_to_base_16(alice_key),
-        base_2_to_base_16(bob_key),
+        compress_string(alice_key),
+        compress_string(bob_key),
+        nb_revealed,
     )
 
     db.load_reconciliation_params(

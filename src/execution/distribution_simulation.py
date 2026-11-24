@@ -2,7 +2,7 @@
 
 from src.distribution import System, Environment, DistributionProtocol
 from src.data_management import DataBase
-from src.execution.utils import base_2_to_base_16
+from src.execution.utils import compress_string
 
 
 def compute_final_system(
@@ -47,7 +47,7 @@ def execute_run_and_store(
     :param db: The database to store the results inside of
     :type db: DataBase
     :param num_iterations: The number of iteration of the protocol to
-    compute
+        compute
     :return: The run_id of this execution to be able to get back the
     results
     :rtype: int"""
@@ -70,8 +70,8 @@ def execute_run_and_store(
     run_id = db.load_run(
         protocol.get_name(),
         environment.get_name(),
-        base_2_to_base_16(alice_key),
-        base_2_to_base_16(bob_key),
+        compress_string(alice_key),
+        compress_string(bob_key),
         eve_info,
         error_rate,
         len(measurements),

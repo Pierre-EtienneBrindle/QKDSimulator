@@ -98,6 +98,7 @@ class DataBase:
                 RecCols.RUN_ID: pd.Series(dtype="uint32"),
                 RecCols.ALICE_KEY: pd.Series(dtype="string"),
                 RecCols.BOB_KEY: pd.Series(dtype="string"),
+                RecCols.NB_REVEALED: pd.Series(dtype="uint32"),
             }
         )
 
@@ -256,7 +257,7 @@ class DataBase:
         """Loads the environments inside the 'environment' DataFrame
 
         :param distribution_protocols: The environments to add to the
-        DataFrame
+            DataFrame
         :type distribution_protocols: List[type[Environment]]
         """
         temp = pd.DataFrame(
@@ -278,8 +279,8 @@ class DataBase:
     def load_environment_params(
         self, run_id: int, params: List[Tuple[str, Any]]
     ) -> None:
-        """Adds the environment parameters to the
-        'environment_params' dataframe.
+        """Adds the environment parameters to the 'environment_params'
+        dataframe.
 
         :param environment_id: The id of the run
         :type environment_id: int
@@ -339,7 +340,12 @@ class DataBase:
         )
 
     def load_reconciliation(
-        self, protocol_name: str, run_id: int, alice_key: str, bob_key: str
+        self,
+        protocol_name: str,
+        run_id: int,
+        alice_key: str,
+        bob_key: str,
+        nb_revealed: int,
     ) -> int:
         """Adds the reconciliation attempt into the 'reconciliation' data frame
 
@@ -351,6 +357,8 @@ class DataBase:
         :type alice_key: str
         :param bob_key: The reconciled key from Bob
         :type bob_key:
+        :param nb_revealed: The number of bits that were leaked while doing IR
+        :type nb_revealed: int
         :return: The reconciliation attempt's id
         :rtype: int"""
 
@@ -367,6 +375,7 @@ class DataBase:
                     RecCols.RUN_ID: run_id,
                     RecCols.ALICE_KEY: alice_key,
                     RecCols.BOB_KEY: bob_key,
+                    RecCols.NB_REVEALED: nb_revealed,
                 }
             ]
         )
@@ -490,7 +499,7 @@ class DataBase:
         :param amplification_id : The privacy amplification attempt's id
         :type amplification_id: int
         :param params: The parameters of the privacy amplification protocol
-        used
+            used
         :type params: List[str,Any]"""
 
         temp = pd.DataFrame(

@@ -7,6 +7,7 @@ from qiskit.quantum_info import Kraus, Operator
 from src.distribution.core import System
 from src.distribution.interfaces import Environment, DistributionProtocol
 from src.distribution.schema import (
+    GenDistParams,
     DepolarizingParams,
     AmplitudeDampingParams,
     BB84Params,
@@ -18,6 +19,7 @@ from src.distribution.schema import (
     TomamichelEtAlEveParams,
     TomamichelEtAlEveQubitLabels,
 )
+from src.distribution.utils import binary_entropy
 
 
 class NoiselessEnvironment(Environment):
@@ -60,7 +62,7 @@ class SingleQbitDepolarization(Environment):
     @classmethod
     def get_instance_from_params(cls, params):
         return SingleQbitDepolarization(
-            params[DepolarizingParams.PROBABILITY]
+            float(params[DepolarizingParams.PROBABILITY])
         )
 
     @classmethod
@@ -107,7 +109,7 @@ class SingleQbitAmplitudeDamping(Environment):
     @classmethod
     def get_instance_from_params(cls, params):
         return SingleQbitAmplitudeDamping(
-            params[AmplitudeDampingParams.PROBABILITY]
+            float(params[AmplitudeDampingParams.PROBABILITY])
         )
 
     @classmethod
@@ -140,25 +142,27 @@ class SingleQbitAmplitudeDamping(Environment):
 class BB84KeyDistribution(DistributionProtocol):
     """Class for the BB84 key distribution protocol"""
 
-    max_error_rate: float = 0
     target_key_size: int = 10
     random_seed: int = 0
 
     def __init__(
         self,
+        security: float,
+        correctness: float,
         max_error_rate: float,
         target_key_size: int,
         random_seed: int,
     ):
-        super().__init__()
-        self.max_error_rate = max_error_rate
+        super().__init__(security, correctness, max_error_rate)
         self.target_key_size = target_key_size
         self.random_seed = random_seed
 
     @classmethod
     def get_instance_from_params(cls, params):
         return BB84KeyDistribution(
-            params[BB84Params.MAX_ERROR_RATE],
+            float(params[GenDistParams.SECURITY]),
+            float(params[GenDistParams.CORRECTNESS]),
+            float(params[GenDistParams.MAX_ERROR_RATE]),
             int(params[BB84Params.TARGET_KEY_SIZE]),
             int(params[BB84Params.RANDOM_SEED]),
         )
@@ -170,8 +174,10 @@ class BB84KeyDistribution(DistributionProtocol):
     def get_all_param_and_values(self):
         return [
             (BB84Params.TARGET_KEY_SIZE, self.target_key_size),
-            (BB84Params.MAX_ERROR_RATE, self.max_error_rate),
+            (GenDistParams.MAX_ERROR_RATE, self.max_error_rate),
             (BB84Params.RANDOM_SEED, self.random_seed),
+            (GenDistParams.CORRECTNESS, self.correctness),
+            (GenDistParams.SECURITY, self.security),
         ]
 
     def compute_raw_keys(self, measurements, labels):
@@ -206,10 +212,6 @@ class BB84KeyDistribution(DistributionProtocol):
             for i, is_detection in enumerate(random_subset)
             if is_detection == 1
         ) / np.sum(random_subset == 1)
-
-        # If there's to much error, they abort
-        if error_rate > self.max_error_rate:
-            return "", "", error_rate
 
         alice_key = "".join(
             bit for i, bit in enumerate(alice_key) if random_subset[i] == 0
@@ -274,6 +276,11 @@ class BB84KeyDistribution(DistributionProtocol):
             >= 4 * (1 + 2 * self.max_error_rate) * self.target_key_size
         )
 
+    def get_max_key_length(self, error_rate, nb_bits_revealed):
+        return (
+            1 - 2 * binary_entropy(self.max_error_rate)
+        ) * self.target_key_size - 2 * np.log2(1 / self.security)
+
 
 class BB84Eve(Environment):
     """Class representing the behavior of an eavesdropper trying to listen to
@@ -295,7 +302,7 @@ class BB84Eve(Environment):
     @classmethod
     def get_instance_from_params(cls, params):
         return BB84Eve(
-            params[BB84EveParams.ATTACK_PROBABILITY],
+            float(params[BB84EveParams.ATTACK_PROBABILITY]),
             int(params[BB84EveParams.SEED]),
         )
 
@@ -329,7 +336,8 @@ class BB84Eve(Environment):
                 return curr_system
 
     def eve_state_pseudo_measurement(self):
-        """Creates a circuit where Eve pseudo-measures the transmitted qubit"""
+        """Creates a circuit where Eve pseudo-measures the transmitted
+        qubit"""
 
         # Create circuit where Eve has a 50/50 prob of pseudo-measuring in X or Z basis
         pseudo_measure_qc = QuantumCircuit(3)
@@ -354,7 +362,6 @@ class BB84Eve(Environment):
         bob_base_idx = labels.index(BB84QbitLabels.BOB_BASE_CHOICE)
         eve_base_idx = labels.index(BB84EveQubitLabels.EVE_BASE_CHOICE)
         eve_attack_idx = labels.index(BB84EveQubitLabels.EVE_ATTACK_CHOICE)
-        eve_bit_idx = labels.index(BB84EveQubitLabels.EVE_COPY)
 
         kept_measurements = [
             m for m in measurements if m[alice_base_idx] == m[bob_base_idx]
@@ -372,7 +379,7 @@ class BB84Eve(Environment):
         ]
 
         return "".join(
-            str(i) + ":" + str(m[eve_bit_idx]) + ","
+            str(i) + ","
             for i, m in enumerate(kept_measurements)
             if m[eve_base_idx] == m[alice_base_idx]
             and m[eve_attack_idx] == "1"
@@ -384,18 +391,18 @@ class TomamichelEtAlKeyDistribution(DistributionProtocol):
 
     bloc_size: int = 0
     detection_size: int = 0
-    max_error_rate: float = 0
     random_seed: int = 0
 
     def __init__(
         self,
+        security: float,
+        correctness: float,
+        max_error_rate: float,
         bloc_size: int,
         detection_size: int,
-        max_error_rate: float,
         random_seed: int,
     ):
-        super().__init__()
-        self.max_error_rate = max_error_rate
+        super().__init__(security, correctness, max_error_rate)
         self.bloc_size = bloc_size
         self.detection_size = detection_size
         self.random_seed = random_seed
@@ -403,9 +410,11 @@ class TomamichelEtAlKeyDistribution(DistributionProtocol):
     @classmethod
     def get_instance_from_params(cls, params):
         return TomamichelEtAlKeyDistribution(
+            float(params[GenDistParams.SECURITY]),
+            float(params[GenDistParams.CORRECTNESS]),
+            float(params[GenDistParams.MAX_ERROR_RATE]),
             int(params[TomamichelEtAlParams.BLOC_SIZE]),
             int(params[TomamichelEtAlParams.DETECTION_SIZE]),
-            params[TomamichelEtAlParams.MAX_ERROR_RATE],
             int(params[TomamichelEtAlParams.RANDOM_SEED]),
         )
 
@@ -415,11 +424,28 @@ class TomamichelEtAlKeyDistribution(DistributionProtocol):
 
     def get_all_param_and_values(self):
         return [
-            (TomamichelEtAlParams.MAX_ERROR_RATE, self.max_error_rate),
+            (GenDistParams.MAX_ERROR_RATE, self.max_error_rate),
             (TomamichelEtAlParams.BLOC_SIZE, self.bloc_size),
             (TomamichelEtAlParams.DETECTION_SIZE, self.detection_size),
             (TomamichelEtAlParams.RANDOM_SEED, self.random_seed),
+            (GenDistParams.SECURITY, self.security),
+            (GenDistParams.CORRECTNESS, self.correctness),
         ]
+
+    def compute_fluctuations(self) -> float:
+        """Compute the statistical fluctuations of the key verification
+
+        :return: The statistical fluctuations
+        :rtype: float
+        """
+        return np.sqrt(
+            (self.bloc_size + self.detection_size)
+            / self.bloc_size
+            / self.detection_size
+            * (self.detection_size + 1)
+            / self.detection_size
+            * np.log(2 / self.security)
+        )
 
     def compute_raw_keys(self, measurements, labels):
         alice_bit_idx = labels.index(
@@ -446,14 +472,15 @@ class TomamichelEtAlKeyDistribution(DistributionProtocol):
             and m[alice_base_idx] == "0"
         ]
 
-        error_rate = sum(
-            m[alice_bit_idx] != m[bob_measurement_idx]
-            for i, m in enumerate(measurements)
-            if i in detection
-        ) / len(detection)
-
-        if error_rate > self.max_error_rate:
-            return "", "", error_rate
+        error_rate = (
+            sum(
+                m[alice_bit_idx] != m[bob_measurement_idx]
+                for i, m in enumerate(measurements)
+                if i in detection
+            )
+            / len(detection)
+            + self.compute_fluctuations()
+        )
 
         # Sets the random seed each time to make results determinist.
         # This shouldn't be done in practice, but it's needed for the
@@ -557,6 +584,19 @@ class TomamichelEtAlKeyDistribution(DistributionProtocol):
             and detection_len >= self.detection_size
         )
 
+    def get_max_key_length(self, error_rate, nb_bits_revealed):
+        return (
+            self.bloc_size
+            * (
+                1
+                - binary_entropy(
+                    self.max_error_rate + self.compute_fluctuations()
+                )
+            )
+            - nb_bits_revealed
+            - np.log2(2 / self.security / self.security / self.correctness)
+        )
+
 
 class TomamichelEtAlEve(Environment):
     """Class representing the behavior of an eavesdropper trying to listen to
@@ -589,7 +629,7 @@ class TomamichelEtAlEve(Environment):
     @classmethod
     def get_instance_from_params(cls, params):
         return TomamichelEtAlEve(
-            params[TomamichelEtAlEveParams.ATTACK_PROBABILITY],
+            float(params[TomamichelEtAlEveParams.ATTACK_PROBABILITY]),
             int(params[TomamichelEtAlEveParams.SEED]),
             int(params[TomamichelEtAlEveParams.BLOC_SIZE]),
             int(params[TomamichelEtAlEveParams.DETECTION_SIZE]),
@@ -633,7 +673,8 @@ class TomamichelEtAlEve(Environment):
         return 2 * np.asin(np.sqrt(px))
 
     def eve_state_pseudo_measurement(self):
-        """Creates a circuit where Eve pseudo-measures the transmitted qubit"""
+        """Creates a circuit where Eve pseudo-measures the transmitted
+        qubit"""
 
         # Create circuit where
         pseudo_measure_qc = QuantumCircuit(3)
@@ -664,7 +705,6 @@ class TomamichelEtAlEve(Environment):
         eve_attack_idx = labels.index(
             TomamichelEtAlEveQubitLabels.EVE_ATTACK_CHOICE
         )
-        eve_copy_idx = labels.index(TomamichelEtAlEveQubitLabels.EVE_COPY)
 
         bloc = [
             i
@@ -677,12 +717,7 @@ class TomamichelEtAlEve(Environment):
         key_subset = rng.choice(bloc, size=int(self.bloc_size), replace=False)
 
         return "".join(
-            (
-                str(np.where(key_subset == i)[0][0])
-                + ":"
-                + str(m[eve_copy_idx])
-                + ","
-            )
+            (str(np.where(key_subset == i)[0][0]) + ",")
             for i, m in enumerate(measurements)
             if i in key_subset
             and m[eve_attack_idx] == "1"
