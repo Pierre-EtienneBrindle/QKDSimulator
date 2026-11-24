@@ -4,7 +4,7 @@ reconciliation protocol"""
 from src.distribution.schema import GenDistParams
 from src.reconciliation import ReconciliationProtocol
 from src.data_management import DataBase, RunCols, DistParamsCols
-from src.execution.utils import base_2_to_base_16, base_16_to_base_2
+from src.execution.utils import compress_string, decompress_string
 
 
 def execute_reconciliation_and_store(
@@ -39,8 +39,8 @@ def execute_reconciliation_and_store(
 
     alice_key, bob_key, nb_revealed, _ = (
         reconciliation_protocol.reconciliate_keys(
-            base_16_to_base_2(alice_raw),
-            base_16_to_base_2(bob_raw),
+            decompress_string(alice_raw),
+            decompress_string(bob_raw),
             error_rate,
             correctness,
         )
@@ -49,8 +49,8 @@ def execute_reconciliation_and_store(
     reconciliation_id = db.load_reconciliation(
         reconciliation_protocol.get_name(),
         run_id,
-        base_2_to_base_16(alice_key),
-        base_2_to_base_16(bob_key),
+        compress_string(alice_key),
+        compress_string(bob_key),
         nb_revealed,
     )
 

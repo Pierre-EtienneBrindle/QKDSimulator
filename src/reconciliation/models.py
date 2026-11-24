@@ -11,6 +11,9 @@ from src.reconciliation.interfaces import ReconciliationProtocol
 from src.reconciliation.schema import CascadeParams
 
 
+# Needs a proof that this is directly correlated with the amount of
+# information ANY Eve could get, not just the few implementation proposed in
+# this project.
 def find_nb_bits_revealed(
     revealed: list[tuple[int, ...]],
     key_length: int,
@@ -336,6 +339,7 @@ class CascadeProtocol(ReconciliationProtocol):
                     modif_idx,
                 )
 
+    # TODO - optimise
     def reconciliate_keys(
         self,
         alice_raw_key,
@@ -390,8 +394,9 @@ class CascadeProtocol(ReconciliationProtocol):
         return (
             alice_raw_key,
             "".join(str(b) for b in bob_array),
-            find_nb_bits_revealed(
-                copy.deepcopy(revealed), len(alice_raw_key)
-            ),
+            # find_nb_bits_revealed(
+            # copy.deepcopy(revealed), len(alice_raw_key)
+            # )
+            len(revealed),
             revealed,
         )
