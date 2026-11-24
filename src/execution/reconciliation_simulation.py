@@ -29,9 +29,11 @@ def execute_reconciliation_and_store(
     bob_raw: str = run_info[RunCols.BOB_KEY].iloc[0]
     error_rate: float = run_info[RunCols.ERROR_RATE].iloc[0]
     correctness: float = db.distribution_params[
-        db.distribution_params[DistParamsCols.RUN_ID]
-        == run_id & db.distribution_params[DistParamsCols.NAME]
-        == GenDistParams.CORRECTNESS
+        (db.distribution_params[DistParamsCols.RUN_ID] == run_id)
+        & (
+            db.distribution_params[DistParamsCols.NAME]
+            == GenDistParams.CORRECTNESS
+        )
     ][DistParamsCols.VALUE].iloc[0]
 
     if alice_raw == "" or bob_raw == "":
