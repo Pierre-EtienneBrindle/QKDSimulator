@@ -476,13 +476,15 @@ class DataBase:
             amplification_id = self.amplification[AmpCols.ID].max() + 1
 
         temp = pd.DataFrame(
-            {
-                AmpCols.ID: amplification_id,
-                AmpCols.PROTOCOL_NAME: protocol_name,
-                AmpCols.RECONCILIATION_ID: reconciliation_id,
-                AmpCols.ALICE_KEY: alice_key,
-                AmpCols.BOB_KEY: bob_key,
-            }
+            [
+                {
+                    AmpCols.ID: amplification_id,
+                    AmpCols.PROTOCOL_NAME: protocol_name,
+                    AmpCols.RECONCILIATION_ID: reconciliation_id,
+                    AmpCols.ALICE_KEY: alice_key,
+                    AmpCols.BOB_KEY: bob_key,
+                }
+            ]
         )
 
         self.amplification = pd.concat(

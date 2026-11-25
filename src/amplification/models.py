@@ -27,11 +27,17 @@ class ToeplitzAmplificationProtocol(AmplificationProtocol):
 
     @classmethod
     def get_name(cls):
-        return "2-universal_extractor"
+        return "toeplitz-matrix"
 
+    # TODO : optimize
     def amplify_keys(self, alice_raw_key, bob_raw_key, max_key_length):
+
+        if max_key_length <= 0:
+            return "", ""
+
         rng = np.random.default_rng(seed=self.seed)
 
+        print(max_key_length)
         n = len(alice_raw_key)
         m = min(n, max_key_length)
 
