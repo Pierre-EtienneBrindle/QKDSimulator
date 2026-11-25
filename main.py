@@ -15,9 +15,11 @@ from src.distribution import (
     TomamichelEtAlEve,
 )
 from src.reconciliation import CascadeProtocol
+from src.amplification import ToeplitzAmplificationProtocol
 from src.execution import (
     execute_run_and_store,
     execute_reconciliation_and_store,
+    execute_amplification_and_store,
 )
 
 from src.data_management import (
@@ -28,6 +30,7 @@ from src.data_management import (
     DataBase,
     RunCols,
     RecCols,
+    AmpCols,
 )
 
 
@@ -84,7 +87,7 @@ def print_run_info(
 
 TARGETED_KEY_LENGTHS = [2_000, 4_000, 6_000, 8_000, 10_000]
 NUM_REPETITIONS = 30
-ENV_PROBS = [0.2, 0.4, 0.6, 0.8, 1.0]
+ENV_PROBS = [0.05, 0.15]
 
 
 def simulate_BB84_no_noise(
@@ -104,7 +107,13 @@ def simulate_BB84_no_noise(
         )
 
         for seed in seeds:
-            prot = BB84KeyDistribution(1.0, key_length, seed)
+            prot = BB84KeyDistribution(
+                1 / 100,
+                1 / 100,
+                0.09,
+                key_length,
+                seed,
+            )
             execute_run_and_store(prot, env, db)
 
         save_db_in_folder(db, folder_path)
@@ -129,7 +138,13 @@ def simulate_BB84_with_Eve(
 
             for seed in seeds:
                 eve = BB84Eve(eve_attack_prob, seed)
-                prot = BB84KeyDistribution(1.0, key_length, seed)
+                prot = BB84KeyDistribution(
+                    1 / 100,
+                    1 / 100,
+                    0.09,
+                    key_length,
+                    seed,
+                )
                 execute_run_and_store(prot, eve, db)
 
             save_db_in_folder(db, folder_path)
@@ -152,7 +167,13 @@ def simulate_BB84_with_amplitude_damping(
             )
 
             for seed in seeds:
-                prot = BB84KeyDistribution(1.0, key_length, seed)
+                prot = BB84KeyDistribution(
+                    1 / 100,
+                    1 / 100,
+                    0.9,
+                    key_length,
+                    seed,
+                )
                 execute_run_and_store(prot, env, db)
 
             save_db_in_folder(db, folder_path)
@@ -175,7 +196,13 @@ def simulate_BB84_with_depolarization(
             )
 
             for seed in seeds:
-                prot = BB84KeyDistribution(1.0, key_length, seed)
+                prot = BB84KeyDistribution(
+                    1 / 100,
+                    1 / 100,
+                    0.09,
+                    key_length,
+                    seed,
+                )
                 execute_run_and_store(prot, env, db)
 
             save_db_in_folder(db, folder_path)
@@ -201,7 +228,12 @@ def simulate_Tomamichel_no_noise(
 
         for seed in seeds:
             prot = TomamichelEtAlKeyDistribution(
-                bloc_size, detection_size, 1.0, seed
+                1 / 100,
+                1 / 100,
+                bloc_size,
+                detection_size,
+                0.09,
+                seed,
             )
             execute_run_and_store(prot, env, db)
 
@@ -235,9 +267,11 @@ def simulate_Tomamichel_with_Eve(
                     detection_size,
                 )
                 prot = TomamichelEtAlKeyDistribution(
+                    1 / 100,
+                    1 / 100,
                     bloc_size,
                     detection_size,
-                    1.0,
+                    0.09,
                     seed,
                 )
                 execute_run_and_store(prot, eve, db)
@@ -265,9 +299,11 @@ def simulate_Tomamichel_with_amplitude_damping(
 
             for seed in seeds:
                 prot = TomamichelEtAlKeyDistribution(
+                    1 / 100,
+                    1 / 100,
                     bloc_size,
                     detection_size,
-                    1.0,
+                    0.09,
                     seed,
                 )
                 execute_run_and_store(prot, env, db)
@@ -297,9 +333,11 @@ def simulate_Tomamichel_with_depolarization(
 
             for seed in seeds:
                 prot = TomamichelEtAlKeyDistribution(
+                    1 / 100,
+                    1 / 100,
                     bloc_size,
                     detection_size,
-                    1.0,
+                    0.09,
                     seed,
                 )
                 execute_run_and_store(prot, env, db)
@@ -330,6 +368,29 @@ def reconciliate_keys(
     save_db_in_folder(db, folder_path)
 
 
+def amplify_keys(
+    db: DataBase,
+    folder_path: Path,
+    ids: list[int],
+    rng: np.random.Generator,
+) -> None:
+    BATCH_SIZE = 500
+    delta = 0
+
+    for rec_id in ids:
+        execute_amplification_and_store(
+            db,
+            ToeplitzAmplificationProtocol(rng.integers(0, 2**32 - 1, 1)[0]),
+            rec_id,
+        )
+        delta += 1
+        if delta >= BATCH_SIZE:
+            save_db_in_folder(db, folder_path)
+            delta = 0
+
+    save_db_in_folder(db, folder_path)
+
+
 def main():
     """Main function"""
     folder_path = Path.cwd() / "results"
@@ -337,23 +398,33 @@ def main():
     db = get_db(folder_path)
     rng = np.random.default_rng()
 
-    # simulate_BB84_no_noise(rng, db, folder_path)
-    # simulate_Tomamichel_no_noise(rng, db, folder_path)
+    simulate_BB84_no_noise(rng, db, folder_path)
+    simulate_Tomamichel_no_noise(rng, db, folder_path)
 
-    # simulate_BB84_with_Eve(rng, db, folder_path)
-    # simulate_Tomamichel_with_Eve(rng, db, folder_path)
+    simulate_BB84_with_Eve(rng, db, folder_path)
+    simulate_Tomamichel_with_Eve(rng, db, folder_path)
 
-    # simulate_BB84_with_amplitude_damping(rng, db, folder_path)
-    # simulate_Tomamichel_with_amplitude_damping(rng, db, folder_path)
+    simulate_BB84_with_amplitude_damping(rng, db, folder_path)
+    simulate_Tomamichel_with_amplitude_damping(rng, db, folder_path)
 
-    # simulate_BB84_with_depolarization(rng, db, folder_path)
-    # simulate_Tomamichel_with_depolarization(rng, db, folder_path)
+    simulate_BB84_with_depolarization(rng, db, folder_path)
+    simulate_Tomamichel_with_depolarization(rng, db, folder_path)
 
     not_reconciled = db.run[
         ~db.run[RunCols.ID].isin(db.reconciliation[RecCols.RUN_ID])
     ]
 
-    reconciliate_keys(db, folder_path, not_reconciled[RunCols.ID].to_list())
+    reconciliate_keys(
+        db, folder_path, not_reconciled[RunCols.ID].to_list(), rng
+    )
+
+    not_amplified = db.reconciliation[
+        ~db.reconciliation[RecCols.ID].isin(
+            db.amplification[AmpCols.RECONCILIATION_ID]
+        )
+    ]
+
+    amplify_keys(db, folder_path, not_amplified[RecCols.ID].to_list(), rng)
 
 
 if __name__ == "__main__":
