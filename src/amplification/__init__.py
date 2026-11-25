@@ -2,11 +2,11 @@
 create custom privacy amplification protocols"""
 
 from .interfaces import AmplificationProtocol
-from .schema import Universal2ExtractorParams
-from .models import Universal2ExtractorProtocol
+from .schema import ToeplitzAmpParams
+from .models import ToeplitzAmplificationProtocol
 
 __all__ = [
     "AmplificationProtocol",
-    "Universal2ExtractorParams",
-    "Universal2ExtractorProtocol",
+    "ToeplitzAmpParams",
+    "ToeplitzAmplificationProtocol",
 ]
