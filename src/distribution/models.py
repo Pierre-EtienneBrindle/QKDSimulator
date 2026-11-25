@@ -277,9 +277,18 @@ class BB84KeyDistribution(DistributionProtocol):
         )
 
     def get_max_key_length(self, error_rate, nb_bits_revealed):
-        return (
-            1 - 2 * binary_entropy(self.max_error_rate)
-        ) * self.target_key_size - 2 * np.log2(1 / self.security)
+        if error_rate > self.max_error_rate:
+            return 0
+        return int(
+            max(
+                0,
+                np.floor(
+                    (1 - 2 * binary_entropy(self.max_error_rate))
+                    * self.target_key_size
+                    - 2 * np.log2(1 / self.security)
+                ),
+            )
+        )
 
 
 class BB84Eve(Environment):
@@ -585,16 +594,32 @@ class TomamichelEtAlKeyDistribution(DistributionProtocol):
         )
 
     def get_max_key_length(self, error_rate, nb_bits_revealed):
-        return (
-            self.bloc_size
-            * (
-                1
-                - binary_entropy(
-                    self.max_error_rate + self.compute_fluctuations()
-                )
+        if error_rate > self.max_error_rate:
+            return 0
+
+        return int(
+            max(
+                0,
+                np.floor(
+                    (
+                        self.bloc_size
+                        * (
+                            1
+                            - binary_entropy(
+                                self.max_error_rate
+                                + self.compute_fluctuations()
+                            )
+                        )
+                        - nb_bits_revealed
+                        - np.log2(
+                            2
+                            / self.security
+                            / self.security
+                            / self.correctness
+                        )
+                    )
+                ),
             )
-            - nb_bits_revealed
-            - np.log2(2 / self.security / self.security / self.correctness)
         )
 
 

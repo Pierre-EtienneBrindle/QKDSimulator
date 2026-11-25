@@ -4,7 +4,7 @@ amplification protocol"""
 from enum import StrEnum, auto
 
 
-class Universal2ExtractorParams(StrEnum):
-    """The parameters of the 2-universal extractor"""
+class ToeplitzAmpParams(StrEnum):
+    """The parameters of the Toeplitz matrix based extractor"""
 
     SEED = auto()

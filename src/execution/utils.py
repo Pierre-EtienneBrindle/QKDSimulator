@@ -2,7 +2,8 @@
 
 
 def compress_string(s: str) -> str:
-    """Converts a number written in base 2 to a number written in base 16. Adds a 1 at the beginning to avoid loosing leading zeros
+    """Converts a number written in base 2 to a number written in base 16.
+    Adds a 1 at the beginning to avoid loosing leading zeros
 
     :param s: The number to convert
     :type s: str

@@ -2,7 +2,8 @@
 
 from typing import Tuple, Set, List, Dict
 from math import ceil
-import copy
+
+# import copy
 
 import numpy as np
 import galois
