@@ -65,7 +65,7 @@ def get_db(folder_path: Path) -> DataBase:
     rec_prots = [CascadeProtocol]
     db.load_reconciliation_protocols(rec_prots)
 
-    amp_prots = []
+    amp_prots = [ToeplitzAmplificationProtocol]
     db.load_amplification_protocols(amp_prots)
 
     return db
