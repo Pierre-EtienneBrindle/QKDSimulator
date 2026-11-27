@@ -1,10 +1,11 @@
 """Implementations of different amplification"""
 
 import numpy as np
-import galois
 
 from src.amplification.interfaces import AmplificationProtocol
 from src.amplification.schema import ToeplitzAmpParams
+
+from src.hashing import get_random_toeplitz_matrix, convert_string_to_gf2
 
 
 class ToeplitzAmplificationProtocol(AmplificationProtocol):
@@ -29,7 +30,6 @@ class ToeplitzAmplificationProtocol(AmplificationProtocol):
     def get_name(cls):
         return "toeplitz-matrix"
 
-    # TODO : optimize
     def amplify_keys(self, alice_raw_key, bob_raw_key, max_key_length):
 
         if max_key_length <= 0:
@@ -37,26 +37,11 @@ class ToeplitzAmplificationProtocol(AmplificationProtocol):
 
         rng = np.random.default_rng(seed=self.seed)
 
-        print(max_key_length)
         n = len(alice_raw_key)
-        m = min(n, max_key_length)
 
-        values = rng.integers(0, 2, size=n + m - 1)
+        matrix = get_random_toeplitz_matrix(rng, min(n, max_key_length), n)
 
-        matrix = np.zeros(shape=(m, n), dtype=np.uint8)
-
-        for i in range(m):
-            for j in range(n):
-                matrix[i, j] = values[n - 1 + i - j]
-
-        gf2 = galois.GF(2)
-
-        matrix = gf2(matrix)
-
-        alice = gf2(np.array([int(a) for a in alice_raw_key]))
-        bob = gf2(np.array([int(b) for b in bob_raw_key]))
-
-        alice = matrix @ alice
-        bob = matrix @ bob
+        alice = matrix @ convert_string_to_gf2(alice_raw_key)
+        bob = matrix @ convert_string_to_gf2(bob_raw_key)
 
         return "".join(str(a) for a in alice), "".join(str(b) for b in bob)

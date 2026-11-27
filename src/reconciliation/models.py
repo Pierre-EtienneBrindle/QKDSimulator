@@ -11,6 +11,8 @@ import galois
 from src.reconciliation.interfaces import ReconciliationProtocol
 from src.reconciliation.schema import CascadeParams
 
+from src.hashing import convert_string_to_gf2, get_random_toeplitz_matrix
+
 
 # Needs a proof that this is directly correlated with the amount of
 # information ANY Eve could get, not just the few implementation proposed in
@@ -348,13 +350,34 @@ class CascadeProtocol(ReconciliationProtocol):
         error_rate,
         correctness,
     ):
+        rng = np.random.default_rng(seed=self.seed)
+
+        alice_key, bob_key, nb_revealed, log = self.__inner_reconciliate_keys(
+            rng, alice_raw_key, bob_raw_key, error_rate
+        )
+
+        same_hash, matrix, hash_a = self.verify_hash(
+            rng, alice_key, bob_key, correctness
+        )
+
+        if not same_hash:
+            return "", "", 0, []
+
+        return alice_key, bob_raw_key, nb_revealed, (log, matrix, hash_a)
+
+    def __inner_reconciliate_keys(
+        self,
+        rng: np.random.Generator,
+        alice_raw_key: str,
+        bob_raw_key: str,
+        error_rate: float,
+    ) -> Tuple[str, str, int, List[Tuple[int, ...]]]:
         if error_rate == 0:
             return alice_raw_key, bob_raw_key, 0, []
 
         alice_array = [int(a) for a in alice_raw_key]
         bob_array = [int(b) for b in bob_raw_key]
 
-        rng = np.random.default_rng(seed=self.seed)
         all_subsets: Dict[int, Set[Tuple[int]]] = {}
 
         max_subset_size = ceil(len(alice_array) / 2)
@@ -390,8 +413,6 @@ class CascadeProtocol(ReconciliationProtocol):
             for subset in list_of_subsets:
                 revealed.append(subset)
 
-        # TODO : Add 2-universal hash function check
-
         return (
             alice_raw_key,
             "".join(str(b) for b in bob_array),
@@ -401,3 +422,23 @@ class CascadeProtocol(ReconciliationProtocol):
             len(revealed),
             revealed,
         )
+
+    def verify_hash(
+        self,
+        rng: np.random.Generator,
+        alice_key: str,
+        bob_key: str,
+        correctness: float,
+    ) -> Tuple[bool, galois.FieldArray, galois.FieldArray]:
+        matrix = get_random_toeplitz_matrix(
+            rng,
+            int(np.ceil(np.log2(1 / correctness))),
+            len(alice_key),
+        )
+
+        hash_a = matrix @ convert_string_to_gf2(alice_key)
+
+        if np.any(hash_a != matrix @ convert_string_to_gf2(bob_key)):
+            return False, None, None
+
+        return True, matrix, hash_a
